@@ -1,4 +1,4 @@
-type QueryValue =
+export type QueryValue =
     | string
     | number
     | boolean

@@ -1,5 +1,5 @@
 import {ApiError} from "./apiError";
-import {buildQuery} from "./buildQuery";
+import {buildQuery, type QueryValue} from "./buildQuery";
 
 /* Shared API client wrapper + standardized error handling. It builds correct URL´s, does fetch and converts to JSON */
 
@@ -25,12 +25,12 @@ const parseBody = async (res: Response) => {
     }
 
     const text = await res.text().catch(() => "");
-    return text.length ? { raw: text } : null;
+    return text.length ? {raw: text} : null;
 };
 
 //Defines what is allowed, GET sends params, all other needs headers
 type GetOptions = {
-    params?: Record<string, unknown>;
+    params?: Record<string, QueryValue>;
     headers?: HeadersInit;
 };
 
@@ -70,7 +70,7 @@ export const apiClient = {
     request,
 
     get: <T>(path: string, options?: GetOptions) => {
-        const query = buildQuery(options?.params as any);
+        const query = buildQuery(options?.params);
         return request<T>(`${path}${query}`, {
             method: "GET",
             headers: options?.headers,
