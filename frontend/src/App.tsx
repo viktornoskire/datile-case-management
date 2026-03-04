@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { apiClient } from "./api/apiClient";
-import { ApiError } from "./api/apiError";
+import { apiClient } from "./services/apiClient.ts";
+import { ApiError } from "./services/apiError.ts";
 
 /* This is the React component that renders as our start page */
 
