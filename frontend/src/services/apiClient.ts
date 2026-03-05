@@ -1,5 +1,5 @@
-import {ApiError} from "./apiError";
-import {buildQuery, type QueryValue} from "./buildQuery";
+import {ApiError} from "./apiError.ts";
+import {buildQuery, type QueryValue} from "./buildQuery.ts";
 
 /* Shared API client wrapper + standardized error handling. It builds correct URL´s, does fetch and converts to JSON */
 
