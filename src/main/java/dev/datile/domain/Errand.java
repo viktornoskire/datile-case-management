@@ -8,6 +8,7 @@ import java.time.Instant;
  * This defines how an errand is supposed to look in the DB
  */
 
+
 @Entity
 @Table(name = "errands")
 public class Errand {
@@ -23,32 +24,31 @@ public class Errand {
     @Column(nullable = false)
     private String title;
 
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
+    private String description;
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", nullable = false)
     private Status status;
 
-    protected Errand() {
-    }
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "priority_id", nullable = false)
+    private Priority priority;
 
-    public Errand(String title, Status status, Instant createdAt) {
+    protected Errand() {}
+
+    public Errand(String title, String description, Status status, Priority priority, Instant createdAt) {
         this.title = title;
+        this.description = description;
         this.status = status;
+        this.priority = priority;
         this.createdAt = createdAt;
     }
 
-    public Long getErrandId() {
-        return errandId;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
+    public Long getErrandId() { return errandId; }
+    public Instant getCreatedAt() { return createdAt; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public Status getStatus() { return status; }
+    public Priority getPriority() { return priority; }
 }

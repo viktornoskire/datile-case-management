@@ -2,12 +2,15 @@ package dev.datile.service;
 
 import dev.datile.dto.errands.ErrandsResponseDto;
 import dev.datile.mapper.ErrandMapper;
+import dev.datile.repository.ErrandHistoryRepository;
 import dev.datile.repository.ErrandRepository;
 import dev.datile.spec.ErrandSpecifications;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.data.jpa.domain.Specification;
+import dev.datile.domain.Errand;
+
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,12 +23,14 @@ import java.util.List;
 @Service
 public class ErrandService {
 
+    private final ErrandHistoryRepository historyRepo;
     private final ErrandRepository repo;
     private final ErrandMapper mapper;
 
-    public ErrandService(ErrandRepository repo, ErrandMapper mapper) {
+    public ErrandService(ErrandRepository repo, ErrandMapper mapper, ErrandHistoryRepository historyRepo) {
         this.repo = repo;
         this.mapper = mapper;
+        this.historyRepo = historyRepo;
     }
 
     public ErrandsResponseDto list(String statusIdsCsv, int page, int size, String sortBy, String sortDir) {
@@ -40,7 +45,30 @@ public class ErrandService {
         );
 
         final var result = repo.findAll(spec, pageable);
-        final var dtos = result.getContent().stream().map(mapper::toListItemDto).toList();
+
+        final var errands = result.getContent();
+        final var ids = errands.stream().map(Errand::getErrandId).toList();
+
+        final var rows = ids.isEmpty()
+                ? List.<ErrandHistoryRepository.HistoryPreviewRow>of()
+                : historyRepo.findHistoryPreview(ids, 2);
+
+        final var historyMap = rows.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        ErrandHistoryRepository.HistoryPreviewRow::getErrandId,
+                        java.util.stream.Collectors.mapping(r ->
+                                        new dev.datile.dto.errands.HistoryEntryDto(
+                                                r.getDescription(),
+                                                r.getVerifiedName(),
+                                                r.getCreatedAt().toInstant()
+                                        ),
+                                java.util.stream.Collectors.toList()
+                        )
+                ));
+
+        final var dtos = errands.stream()
+                .map(e -> mapper.toListItemDto(e, historyMap.getOrDefault(e.getErrandId(), List.of())))
+                .toList();
 
         return new ErrandsResponseDto(dtos, result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
     }
