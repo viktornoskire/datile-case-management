@@ -19,12 +19,13 @@ public class ErrandController {
 
     @GetMapping
     public ErrandsResponseDto list(
+            @RequestParam(required = false) String statusIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir
     ) {
         // Controller does not do anything smart, it just delegates to service as it should
-        return service.listAll(page, size, sortBy, sortDir);
+        return service.list(statusIds, page, size, sortBy, sortDir);
     }
 }
