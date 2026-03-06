@@ -1,6 +1,8 @@
 import type {ErrandListItem} from "../types/errands";
 import {useNavigate} from "react-router-dom";
-import { getPriorityStyles } from "../utils/priorityStyles";
+import {getPriorityStyles} from "../utils/priorityStyles";
+
+/* React component to show errands in the card view */
 
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(undefined, {year: "numeric", month: "2-digit", day: "2-digit"});
@@ -19,7 +21,7 @@ const safe = (v?: string | null) => (v && v.trim().length > 0 ? v : "—");
 export const ErrandCard = ({errand}: { errand: ErrandListItem }) => {
     const navigate = useNavigate();
     const prio = getPriorityStyles(errand.priority);
-    const { name: priorityName, cardStyle, valueStyle, badgeStyle } = prio;
+    const {name: priorityName, cardStyle, valueStyle, badgeStyle} = prio;
 
     const customerName = errand.customer?.name ?? "—";
     const assigneeName = errand.assignee?.name ?? "—";
@@ -30,7 +32,7 @@ export const ErrandCard = ({errand}: { errand: ErrandListItem }) => {
     const history = errand.historyPreview?.slice(0, 2) ?? [];
 
     return (
-        <article className="rounded-2xl shadow-sm p-4 text-base" style={cardStyle}>
+        <article className="flex h-full flex-col rounded-2xl p-4 text-base shadow-sm" style={cardStyle}>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                 <div className="space-y-2">
                     <div>
@@ -125,7 +127,7 @@ export const ErrandCard = ({errand}: { errand: ErrandListItem }) => {
                 </div>
             </div>
 
-            <div className="mt-4 flex justify-end">
+            <div className="mt-auto flex justify-end pt-4">
                 <button
                     className="rounded-full bg-emerald-300 px-6 py-2 text-sm font-semibold text-emerald-950 shadow-sm hover:bg-emerald-400"
                     onClick={() => navigate(`/errands/${errand.errandId}`)}

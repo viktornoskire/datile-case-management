@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { fetchErrands } from "../api/errandsApi";
 import { ErrandCard } from "../components/ErrandCard";
 import type { ErrandsResponse } from "../types/errands";
+import { ErrandListRow } from "../components/ErrandListRow";
 
-/* Representation component for an errand card */
+/* React component for an errand card */
 
 export default function Errands() {
     const [data, setData] = useState<ErrandsResponse | null>(null);
@@ -79,17 +80,13 @@ export default function Errands() {
                     ))}
                 </div>
             ) : (
-                <div className="space-y-3">
+                <ul className="m-0 list-none space-y-3 p-0">
                     {data.errands.map((e) => (
-                        <div key={e.errandId} className="rounded-xl border bg-white p-3 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div className="font-semibold">{e.title}</div>
-                                <div className="text-sm text-slate-600">{e.status.name}</div>
-                            </div>
-                            <div className="mt-1 text-xs text-slate-500">ID #{e.errandId}</div>
-                        </div>
+                        <li key={e.errandId}>
+                            <ErrandListRow errand={e} />
+                        </li>
                     ))}
-                </div>
+                </ul>
             )}
         </div>
     );
