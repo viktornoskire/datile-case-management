@@ -15,6 +15,6 @@ public record ErrandDetailsDto(
         ContactDto contact,
         List<HistoryEntryDto> history,
         Double timeSpent,
-        Double agreedPrice
+        java.math.BigDecimal agreedPrice
 ) {
 }

@@ -1,9 +1,8 @@
 package dev.datile.domain;
 
 import jakarta.persistence.*;
-import java.time.Instant;
 
-/* JPA Entity for errand_history table */
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "errand_history")
@@ -14,7 +13,7 @@ public class ErrandHistoryEntry {
     @Column(name = "history_id")
     private Long historyId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "errand_id", nullable = false)
     private Errand errand;
 
@@ -25,9 +24,9 @@ public class ErrandHistoryEntry {
     private String verifiedName;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    private Timestamp createdAt;
 
-    protected ErrandHistoryEntry() {
+    public ErrandHistoryEntry() {
     }
 
     public Long getHistoryId() {
@@ -46,7 +45,23 @@ public class ErrandHistoryEntry {
         return verifiedName;
     }
 
-    public Instant getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    public void setErrand(Errand errand) {
+        this.errand = errand;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setVerifiedName(String verifiedName) {
+        this.verifiedName = verifiedName;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 }

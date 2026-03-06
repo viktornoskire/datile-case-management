@@ -21,10 +21,15 @@ public class ErrandMapper {
                 e.getCreatedAt(),
                 e.getTitle(),
                 e.getDescription(),
-                new StatusDto(e.getStatus().getStatusId(), e.getStatus().getName()),
+                toStatusDto(e.getStatus()),
                 toPriorityDto(e.getPriority()),
                 historyPreview
         );
+    }
+
+    private StatusDto toStatusDto(dev.datile.domain.Status s) {
+        if (s == null) return null;
+        return new StatusDto(s.getStatusId(), s.getName());
     }
 
     private PriorityDto toPriorityDto(Priority p) {

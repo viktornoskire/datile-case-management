@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { fetchErrandById } from "../api/errandsApi";
+import { EditErrandForm } from "./EditErrandForm";
 import type { ErrandDetails } from "../types/errands";
 
 type ErrandDetailsModalProps = {
     errandId: number;
     onClose: () => void;
+    onErrandUpdated: (updatedErrand: ErrandDetails) => void;
 };
 
 const formatDate = (iso?: string | null) => {
@@ -92,7 +94,7 @@ const Field = ({
                    valueStyle,
                }: {
     label: string;
-    value: React.ReactNode;
+    value: ReactNode;
     valueStyle?: CSSProperties;
 }) => (
     <div className="space-y-1">
@@ -108,10 +110,12 @@ const Field = ({
 export const ErrandDetailsModal = ({
                                        errandId,
                                        onClose,
+                                       onErrandUpdated,
                                    }: ErrandDetailsModalProps) => {
     const [data, setData] = useState<ErrandDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -120,6 +124,7 @@ export const ErrandDetailsModal = ({
 
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
+        setIsEditing(false);
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
@@ -162,10 +167,7 @@ export const ErrandDetailsModal = ({
         dialogRef.current?.focus();
     }, []);
 
-    const priorityUi = useMemo(
-        () => getPriorityTone(data?.priority),
-        [data?.priority],
-    );
+    const priorityUi = useMemo(() => getPriorityTone(data?.priority), [data?.priority]);
 
     const contactName = data?.contact
         ? `${data.contact.firstName ?? ""} ${data.contact.lastName ?? ""}`.trim()
@@ -174,6 +176,12 @@ export const ErrandDetailsModal = ({
     const phone = data?.contact?.phoneNumber ?? "—";
     const mail = data?.contact?.mail ?? "—";
     const history = data?.history ?? [];
+
+    const handleSaved = (updatedErrand: ErrandDetails) => {
+        setData(updatedErrand);
+        setIsEditing(false);
+        onErrandUpdated(updatedErrand);
+    };
 
     return (
         <div
@@ -194,10 +202,14 @@ export const ErrandDetailsModal = ({
                     <div className="mb-6 flex items-start justify-between gap-4">
                         <div>
                             <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                Ärendedetaljer
+                                {isEditing ? "Redigera ärende" : "Ärendedetaljer"}
                             </div>
                             <h2 className="mt-2 text-3xl font-bold text-slate-900">
-                                {loading ? "Laddar ärende..." : safe(data?.title)}
+                                {loading
+                                    ? "Laddar ärende..."
+                                    : isEditing
+                                        ? "Ärenden › Redigera ärende"
+                                        : safe(data?.title)}
                             </h2>
                         </div>
 
@@ -223,21 +235,21 @@ export const ErrandDetailsModal = ({
                         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-600">
                             Ingen data hittades.
                         </div>
+                    ) : isEditing ? (
+                        <EditErrandForm
+                            errand={data}
+                            onCancel={() => setIsEditing(false)}
+                            onSaved={handleSaved}
+                        />
                     ) : (
                         <div className="space-y-6">
                             <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 md:grid-cols-2 lg:grid-cols-4">
-                                <Field
-                                    label="Datum"
-                                    value={formatDate(data.createdAt)}
-                                />
+                                <Field label="Datum" value={formatDate(data.createdAt)} />
                                 <Field
                                     label="Ärende ID"
                                     value={String(data.errandId).padStart(3, "0")}
                                 />
-                                <Field
-                                    label="Status"
-                                    value={safe(data.status?.name)}
-                                />
+                                <Field label="Status" value={safe(data.status?.name)} />
                                 <div className="space-y-1">
                                     <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                                         Prioritet
@@ -246,8 +258,8 @@ export const ErrandDetailsModal = ({
                                         className="inline-flex rounded-full border px-3 py-1 text-sm font-semibold"
                                         style={priorityUi.badgeStyle}
                                     >
-                                        {priorityUi.name}
-                                    </span>
+                    {priorityUi.name}
+                  </span>
                                 </div>
                             </div>
 
@@ -272,24 +284,15 @@ export const ErrandDetailsModal = ({
                                                 value={safe(data.customer?.name)}
                                                 valueStyle={priorityUi.valueStyle}
                                             />
-                                            <Field
-                                                label="Namn"
-                                                value={safe(contactName)}
-                                            />
-                                            <Field
-                                                label="Telefonnummer"
-                                                value={safe(phone)}
-                                            />
+                                            <Field label="Namn" value={safe(contactName)} />
+                                            <Field label="Telefonnummer" value={safe(phone)} />
                                             <Field
                                                 label="E-post"
                                                 value={
                                                     mail === "—" ? (
                                                         "—"
                                                     ) : (
-                                                        <a
-                                                            className="underline"
-                                                            href={`mailto:${mail}`}
-                                                        >
+                                                        <a className="underline" href={`mailto:${mail}`}>
                                                             {mail}
                                                         </a>
                                                     )
@@ -314,9 +317,7 @@ export const ErrandDetailsModal = ({
                                         </h3>
 
                                         {history.length === 0 ? (
-                                            <div className="text-sm text-slate-500">
-                                                Ingen historik än.
-                                            </div>
+                                            <div className="text-sm text-slate-500">Ingen historik än.</div>
                                         ) : (
                                             <ul className="space-y-4">
                                                 {history.map((item, index) => (
@@ -328,8 +329,7 @@ export const ErrandDetailsModal = ({
                                                             {safe(item.description)}
                                                         </div>
                                                         <div className="mt-2 text-xs text-slate-500">
-                                                            {safe(item.verifiedName)} ·{" "}
-                                                            {formatDateTime(item.createdAt)}
+                                                            {safe(item.verifiedName)} · {formatDateTime(item.createdAt)}
                                                         </div>
                                                     </li>
                                                 ))}
@@ -348,10 +348,7 @@ export const ErrandDetailsModal = ({
                                         </h3>
 
                                         <div className="grid gap-4">
-                                            <Field
-                                                label="Tidsåtgång"
-                                                value={formatHours(data.timeSpent)}
-                                            />
+                                            <Field label="Tidsåtgång" value={formatHours(data.timeSpent)} />
                                             <Field
                                                 label="Överenskommet pris"
                                                 value={formatMoney(data.agreedPrice)}
@@ -375,6 +372,7 @@ export const ErrandDetailsModal = ({
                                             <button
                                                 type="button"
                                                 className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
+                                                onClick={() => setIsEditing(true)}
                                             >
                                                 Redigera
                                             </button>
