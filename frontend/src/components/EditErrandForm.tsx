@@ -487,7 +487,7 @@ export const EditErrandForm = ({
                         id="agreedPrice"
                         type="number"
                         min="0"
-                        step="100"
+                        step="1"
                         value={agreedPrice}
                         onChange={(event) => setAgreedPrice(event.target.value)}
                         className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
