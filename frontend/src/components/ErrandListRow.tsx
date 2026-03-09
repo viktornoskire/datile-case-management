@@ -1,6 +1,5 @@
-import {useNavigate} from "react-router-dom";
-import type {ErrandListItem} from "../types/errands";
-import {getPriorityStyles} from "../utils/priorityStyles";
+import type { ErrandListItem } from "../types/errands";
+import { getPriorityStyles } from "../utils/priorityStyles";
 
 /* React component to show errands in the list view */
 
@@ -23,9 +22,14 @@ const formatDateTime = (iso: string) =>
 const safe = (value?: string | null) =>
     value && value.trim().length > 0 ? value : "—";
 
-export const ErrandListRow = ({errand}: { errand: ErrandListItem }) => {
-    const navigate = useNavigate();
-    const {name: priorityName, cardStyle, badgeStyle, valueStyle} =
+export const ErrandListRow = ({
+                                  errand,
+                                  onOpen,
+                              }: {
+    errand: ErrandListItem;
+    onOpen: (errandId: number) => void;
+}) => {
+    const { name: priorityName, accentStyle, badgeStyle, valueStyle } =
         getPriorityStyles(errand.priority);
 
     const customerName = errand.customer?.name ?? "—";
@@ -43,73 +47,63 @@ export const ErrandListRow = ({errand}: { errand: ErrandListItem }) => {
         }, undefined as (typeof errand.historyPreview)[number] | undefined) ?? null;
 
     return (
-        <article
-            className="rounded-2xl p-4 shadow-sm transition-shadow hover:shadow-md"
-            style={cardStyle}
-        >
-            <div
-                className="grid gap-4 lg:grid-cols-[90px_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-start">
-                <div>
-                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-700">
-                        Ärende ID
+        <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="h-1 w-full" style={accentStyle} />
+
+            <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.6fr)_160px_160px_120px_auto] lg:items-center">
+                <div className="min-w-0">
+                    <div className="truncate text-base font-semibold text-slate-900">
+                        <span className="text-slate-500">Titel: </span>
+                        <span style={valueStyle}>{safe(errand.title)}</span>
                     </div>
-                    <div className="font-semibold text-slate-900">
-                        {String(errand.errandId).padStart(3, "0")}
+
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+                        <span>
+                            <span className="font-semibold text-slate-500">Prioritet: </span>
+                            <span
+                                className="inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+                                style={badgeStyle}
+                            >
+                                {priorityName}
+                            </span>
+                        </span>
+
+                        <span>
+                            <span className="font-semibold text-slate-500">Status: </span>
+                            {safe(statusName)}
+                        </span>
+                    </div>
+
+                    <div className="mt-2 truncate text-xs text-slate-500">
+                        <span className="font-semibold">Senaste historik: </span>
+                        {latestHistory
+                            ? `${safe(latestHistory.description)} · ${safe(
+                                latestHistory.verifiedName,
+                            )} · ${formatDateTime(latestHistory.createdAt)}`
+                            : "Ingen historik än."}
                     </div>
                 </div>
 
-                <div className="min-w-0">
-                    <div className="truncate">
-                        <span className="font-semibold text-slate-900">Titel: </span>
-                        <span className="font-semibold" style={valueStyle}>
-    {safe(errand.title)}
-  </span>
-                    </div>
-
-                    <div className="mt-3 text-sm">
-                        <div className="font-semibold text-slate-900">Senaste historik</div>
-
-                        {latestHistory ? (
-                            <div className="mt-1 rounded-xl bg-white/60 p-2">
-                                <div className="text-slate-900">
-                                    {safe(latestHistory.description)}
-                                </div>
-                                <div className="mt-1 text-xs text-slate-700">
-                                    ✓ {safe(latestHistory.verifiedName)} ·{" "}
-                                    {formatDateTime(latestHistory.createdAt)}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="mt-1 text-xs text-slate-700">
-                                Ingen historik än.
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="min-w-0">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+                <div className="min-w-0 text-sm">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Kund
                     </div>
                     <div className="truncate font-medium text-slate-900">
                         {safe(customerName)}
                     </div>
-
-                    <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-700">
-                        Status
-                    </div>
-                    <div className="font-medium text-slate-900">{safe(statusName)}</div>
                 </div>
 
-                <div className="min-w-0">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-700">
+                <div className="min-w-0 text-sm">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Ansvarig
                     </div>
                     <div className="truncate font-medium text-slate-900">
                         {safe(assigneeName)}
                     </div>
+                </div>
 
-                    <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-700">
+                <div className="text-sm">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Datum
                     </div>
                     <div className="font-medium text-slate-900">
@@ -117,18 +111,20 @@ export const ErrandListRow = ({errand}: { errand: ErrandListItem }) => {
                     </div>
                 </div>
 
-                <div className="flex h-full flex-col items-end gap-3">
-  <span
-      className="rounded-full border px-3 py-1 text-sm font-semibold"
-      style={badgeStyle}
-  >
-    {priorityName}
-  </span>
+                <div className="flex h-full min-w-[110px] flex-col items-end justify-between gap-3">
+                    <div className="text-right text-sm">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Ärende ID
+                        </div>
+                        <div className="font-semibold text-slate-900">
+                            {String(errand.errandId).padStart(3, "0")}
+                        </div>
+                    </div>
 
                     <button
                         type="button"
-                        className="mt-auto rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-950 shadow-sm hover:bg-emerald-400"
-                        onClick={() => navigate(`/errands/${errand.errandId}`)}
+                        className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        onClick={() => onOpen(errand.errandId)}
                     >
                         Visa mer
                     </button>

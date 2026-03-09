@@ -1,6 +1,6 @@
-import type {CSSProperties} from "react";
+import type { CSSProperties } from "react";
 
-/* Helper for our priority colors since reuse is needed in listview */
+/* Helper for our priority colors */
 
 export type PriorityLike = { name?: string; color?: string } | null | undefined;
 
@@ -21,19 +21,21 @@ const hexToRgba = (hex: string, alpha: number) => {
 export const getPriorityStyles = (priority: PriorityLike) => {
     const color = priority?.color ?? "#CBD5E1";
     const name = priority?.name ?? "—";
+    const isWhite = color.toLowerCase() === "#ffffff";
 
     return {
         name,
         color,
-        cardStyle: {
-            backgroundColor: hexToRgba(color, 0.28),
+        accentStyle: {
+            backgroundColor: isWhite ? "#E2E8F0" : color,
         } as CSSProperties,
         badgeStyle: {
-            backgroundColor: hexToRgba(color, 0.18),
-            borderColor: hexToRgba(color, 0.6),
+            backgroundColor: isWhite ? "#FFFFFF" : hexToRgba(color, 0.12),
+            borderColor: isWhite ? "#CBD5E1" : hexToRgba(color, 0.45),
+            color: isWhite ? "#0F172A" : color,
         } as CSSProperties,
         valueStyle: {
-            color,
+            color: isWhite ? "#0F172A" : color,
         } as CSSProperties,
     };
 };

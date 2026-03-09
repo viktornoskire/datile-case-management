@@ -1,11 +1,14 @@
 import type {ErrandListItem} from "../types/errands";
-import {useNavigate} from "react-router-dom";
 import {getPriorityStyles} from "../utils/priorityStyles";
 
 /* React component to show errands in the card view */
 
 const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString(undefined, {year: "numeric", month: "2-digit", day: "2-digit"});
+    new Date(iso).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    });
 
 const formatDateTime = (iso: string) =>
     new Date(iso).toLocaleString(undefined, {
@@ -16,124 +19,176 @@ const formatDateTime = (iso: string) =>
         minute: "2-digit",
     });
 
-const safe = (v?: string | null) => (v && v.trim().length > 0 ? v : "—");
+const safe = (value?: string | null) =>
+    value && value.trim().length > 0 ? value : "—";
 
-export const ErrandCard = ({errand}: { errand: ErrandListItem }) => {
-    const navigate = useNavigate();
+export const ErrandCard = ({
+                               errand,
+                               onOpen,
+                           }: {
+    errand: ErrandListItem;
+    onOpen: (errandId: number) => void;
+}) => {
     const prio = getPriorityStyles(errand.priority);
-    const {name: priorityName, cardStyle, valueStyle, badgeStyle} = prio;
+    const {name: priorityName, color, valueStyle, badgeStyle} = prio;
 
     const customerName = errand.customer?.name ?? "—";
     const assigneeName = errand.assignee?.name ?? "—";
-    const contactName = errand.contact ? `${errand.contact.firstName} ${errand.contact.lastName}` : "—";
+    const contactName = errand.contact
+        ? `${errand.contact.firstName} ${errand.contact.lastName}`
+        : "—";
     const phone = errand.contact?.phoneNumber ?? "—";
     const mail = errand.contact?.mail ?? "—";
 
     const history = errand.historyPreview?.slice(0, 2) ?? [];
+    const accentColor = color.toLowerCase() === "#ffffff" ? "#E2E8F0" : color;
 
     return (
-        <article className="flex h-full flex-col rounded-2xl p-4 text-base shadow-sm" style={cardStyle}>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                <div className="space-y-2">
-                    <div>
-                        <span className="font-semibold text-slate-900">Titel: </span>
-                        <span className="font-semibold" style={valueStyle}>{safe(errand.title)}</span>
+        <article
+            className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
+            <div className="h-1.5 w-full" style={{backgroundColor: accentColor}}/>
+
+            <div className="flex h-full flex-col p-5">
+                <div className="mb-5 flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
+                    <div className="min-w-0">
+                        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                            Ärende
+                        </div>
+
+                        <h3 className="mt-2 line-clamp-2 text-lg font-bold text-slate-900">
+                            {safe(errand.title)}
+                        </h3>
                     </div>
 
-                    <div>
-                        <span className="font-semibold text-slate-900">Beskrivning: </span>
-                        <span className="font-semibold" style={valueStyle}>{safe(errand.description)}</span>
-                    </div>
-
-                    <div>
-                        <span className="font-semibold text-slate-900">Ansvarig: </span>
-                        <span className="font-semibold" style={valueStyle}>
-              {safe(assigneeName)}
-            </span>
-                    </div>
-
-                    <div>
-                        <span className="font-semibold text-slate-900">Kund: </span>
-                        <span className="font-semibold" style={valueStyle}>
-              {safe(customerName)}
-            </span>
-                    </div>
-
-                    <div>
-                        <span className="font-semibold text-slate-900">Namn: </span>
-                        <span className="font-semibold" style={valueStyle}>
-              {safe(contactName)}
-            </span>
-                    </div>
-
-                    <div>
-                        <span className="font-semibold text-slate-900">Telefonnummer: </span>
-                        <span className="font-semibold" style={valueStyle}>
-              {safe(phone)}
-            </span>
-                    </div>
-
-                    <div>
-                        <span className="font-semibold text-slate-900">E-post: </span>
-                        {mail === "—" ? (
-                            <span className="font-semibold" style={valueStyle}>
-                —
-              </span>
-                        ) : (
-                            <a className="font-semibold underline" style={valueStyle} href={`mailto:${mail}`}>
-                                {mail}
-                            </a>
-                        )}
-                    </div>
+                    <span
+                        className="shrink-0 rounded-full border px-3 py-1 text-sm font-semibold"
+                        style={badgeStyle}
+                    >
+                        {priorityName}
+                    </span>
                 </div>
 
-                <div className="space-y-2 text-right">
-                    <div>
-                        <span className="font-semibold text-slate-900">Datum: </span>
-                        <span className="font-semibold text-slate-900">{formatDate(errand.createdAt)}</span>
+                <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div className="space-y-4">
+                        <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                Översikt
+                            </div>
+
+                            <div className="space-y-2 text-sm">
+                                <div>
+                                    <span className="font-semibold text-slate-500">Beskrivning: </span>
+                                    <span className="font-medium text-slate-900">
+                                        {safe(errand.description)}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <span className="font-semibold text-slate-500">Ansvarig: </span>
+                                    <span className="font-medium" style={valueStyle}>
+                                        {safe(assigneeName)}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <span className="font-semibold text-slate-500">Kund: </span>
+                                    <span className="font-medium" style={valueStyle}>
+                                        {safe(customerName)}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <span className="font-semibold text-slate-500">Namn: </span>
+                                    <span className="font-medium text-slate-900">
+                                        {safe(contactName)}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <span className="font-semibold text-slate-500">Telefonnummer: </span>
+                                    <span className="font-medium text-slate-900">
+                                        {safe(phone)}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <span className="font-semibold text-slate-500">E-post: </span>
+                                    {mail === "—" ? (
+                                        <span className="font-medium text-slate-900">—</span>
+                                    ) : (
+                                        <a
+                                            className="font-medium underline decoration-slate-300 underline-offset-2"
+                                            href={`mailto:${mail}`}
+                                            style={valueStyle}
+                                        >
+                                            {mail}
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="rounded-xl border border-slate-200 bg-white p-4">
+                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                Historik
+                            </div>
+
+                            {history.length === 0 ? (
+                                <div className="text-sm text-slate-500">Ingen historik än.</div>
+                            ) : (
+                                <ul className="space-y-3">
+                                    {history.map((h, index) => (
+                                        <li
+                                            key={index}
+                                            className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                                        >
+                                            <div className="text-sm font-semibold text-slate-900">
+                                                {h.description}
+                                            </div>
+                                            <div className="mt-1 text-xs text-slate-500">
+                                                {h.verifiedName} · {formatDateTime(h.createdAt)}
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
                     </div>
 
-                    <div>
-                        <span className="font-semibold text-slate-900">Ärende ID: </span>
-                        <span className="font-semibold text-slate-900">{String(errand.errandId).padStart(3, "0")}</span>
-                    </div>
+                    <div className="space-y-4">
+                        <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                Ärende info
+                            </div>
 
-                    <div className="mt-2 flex justify-end">
-            <span className="rounded-full border px-3 py-1 text-sm font-semibold" style={badgeStyle}>
-              {priorityName}
-            </span>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-3">
-                <div className="text-base font-semibold text-slate-900 underline">Historik</div>
-
-                <div className="mt-2 rounded-xl bg-white/70 p-3 shadow-inner">
-                    {history.length === 0 ? (
-                        <div className="text-sm text-slate-700">Ingen historik än.</div>
-                    ) : (
-                        <ul className="space-y-2 text-sm text-slate-900">
-                            {history.map((h, i) => (
-                                <li key={i}>
-                                    <div>– {h.description}</div>
-                                    <div className="text-slate-700">
-                                        ✓ {h.verifiedName} <span className="ml-2">{formatDateTime(h.createdAt)}</span>
+                            <div className="space-y-3 text-sm">
+                                <div>
+                                    <div className="font-semibold text-slate-500">Datum</div>
+                                    <div className="font-medium text-slate-900">
+                                        {formatDate(errand.createdAt)}
                                     </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            </div>
+                                </div>
 
-            <div className="mt-auto flex justify-end pt-4">
-                <button
-                    className="rounded-full bg-emerald-300 px-6 py-2 text-sm font-semibold text-emerald-950 shadow-sm hover:bg-emerald-400"
-                    onClick={() => navigate(`/errands/${errand.errandId}`)}
-                >
-                    Visa mer
-                </button>
+                                <div>
+                                    <div className="font-semibold text-slate-500">Ärende ID</div>
+                                    <div className="font-medium text-slate-900">
+                                        {String(errand.errandId).padStart(3, "0")}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <div className="mt-auto flex justify-end pt-5">
+                    <button
+                        type="button"
+                        className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        onClick={() => onOpen(errand.errandId)}
+                    >
+                        Visa mer
+                    </button>
+                </div>
             </div>
         </article>
     );

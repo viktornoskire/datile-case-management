@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { fetchErrands } from "../api/errandsApi";
-import { ErrandCard } from "../components/ErrandCard";
-import type { ErrandsResponse } from "../types/errands";
-import { ErrandListRow } from "../components/ErrandListRow";
+import {useEffect, useState} from "react";
+import {fetchErrands} from "../api/errandsApi";
+import {ErrandCard} from "../components/ErrandCard";
+import type {ErrandsResponse, ErrandDetails} from "../types/errands";
+import {ErrandListRow} from "../components/ErrandListRow";
+import {ErrandDetailsModal} from "../components/ErrandDetailsModal";
 
 /* React component for an errand card */
 
@@ -10,8 +11,40 @@ export default function Errands() {
     const [data, setData] = useState<ErrandsResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
     const [view, setView] = useState<"cards" | "list">("cards");
+    const [selectedErrandId, setSelectedErrandId] = useState<number | null>(null);
+    const openModal = (errandId: number) => {
+        setSelectedErrandId(errandId);
+    };
+
+    const closeModal = () => {
+        setSelectedErrandId(null);
+    };
+
+    const handleErrandUpdated = (updatedErrand: ErrandDetails) => {
+        setData((current) => {
+            if (!current) return current;
+
+            return {
+                ...current,
+                errands: current.errands.map((errand) =>
+                    errand.errandId === updatedErrand.errandId
+                        ? {
+                            ...errand,
+                            title: updatedErrand.title,
+                            description: updatedErrand.description,
+                            status: updatedErrand.status,
+                            priority: updatedErrand.priority,
+                            assignee: updatedErrand.assignee,
+                            customer: updatedErrand.customer,
+                            contact: updatedErrand.contact,
+                            historyPreview: updatedErrand.history?.slice(0, 2) ?? [],
+                        }
+                        : errand,
+                ),
+            };
+        });
+    };
 
     useEffect(() => {
         let alive = true;
@@ -49,7 +82,7 @@ export default function Errands() {
     if (!data || data.errands.length === 0) return <div className="p-6">Inga ärenden hittades.</div>;
 
     return (
-        <div className="p-6">
+        <div className="min-h-screen bg-stone-100 p-6">
             <div className="mb-4 flex items-center justify-between">
                 <h1 className="text-xl font-bold">Ärenden</h1>
 
@@ -76,17 +109,25 @@ export default function Errands() {
             {view === "cards" ? (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {data.errands.map((e) => (
-                        <ErrandCard key={e.errandId} errand={e} />
+                        <ErrandCard key={e.errandId} errand={e} onOpen={openModal}/>
                     ))}
                 </div>
             ) : (
                 <ul className="m-0 list-none space-y-3 p-0">
                     {data.errands.map((e) => (
                         <li key={e.errandId}>
-                            <ErrandListRow errand={e} />
+                            <ErrandListRow errand={e} onOpen={openModal}/>
                         </li>
                     ))}
                 </ul>
+            )}
+
+            {selectedErrandId !== null && (
+                <ErrandDetailsModal
+                    errandId={selectedErrandId}
+                    onClose={closeModal}
+                    onErrandUpdated={handleErrandUpdated}
+                />
             )}
         </div>
     );

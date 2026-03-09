@@ -1,21 +1,22 @@
 package dev.datile.dto.errands;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-/* A light errand object suitable for list/cards.
- * historyPreview contains at most 2 latest history entries, ordered newest first.
- */
-public record ErrandListItemDto(
+/* Full details DTO for a single errand. */
+public record ErrandDetailsDto(
         Long errandId,
         Instant createdAt,
         String title,
         String description,
         StatusDto status,
         PriorityDto priority,
-        List<HistoryEntryDto> historyPreview,
+        List<HistoryEntryDto> history,
         AssigneeDto assignee,
         CustomerDto customer,
-        ContactDto contact
+        ContactDto contact,
+        Double timeSpent,
+        BigDecimal agreedPrice
 ) {
 }

@@ -6,28 +6,69 @@ export type ErrandsResponse = {
     totalPages: number;
 };
 
+export type ErrandHistoryItem = {
+    description: string;
+    historyId: number;
+    verifiedName: string;
+    createdAt: string;
+};
+
+export type ErrandStatus = {
+    statusId: number;
+    name: string;
+};
+
+export type ErrandPriority = {
+    priorityId: number;
+    name: string;
+    color: string;
+    isDefault: boolean;
+};
+
+export type ErrandAssignee = {
+    assigneeId: number;
+    name: string;
+};
+
+export type ErrandCustomer = {
+    customerId: number;
+    name: string;
+    isActive: boolean;
+};
+
+export type ErrandContact = {
+    customerId: number;
+    contactId: number;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string | null;
+    mail: string | null;
+};
+
 export type ErrandListItem = {
     errandId: number;
     createdAt: string;
     title: string;
-    description?: string | null;
+    description: string | null;
+    status: ErrandStatus;
+    priority: ErrandPriority;
+    historyPreview: ErrandHistoryItem[];
+    assignee: ErrandAssignee | null;
+    customer: ErrandCustomer | null;
+    contact: ErrandContact | null;
+};
 
-    status: { statusId: number; name: string };
-
-    // needed for card colors
-    priority?: { priorityId: number; name: string; color: string } | null;
-
-    // preview from server (maximum 2)
-    historyPreview?: { description: string; verifiedName: string; createdAt: string }[];
-
-    // (comes later)
-    assignee?: { assigneeId: number; name: string } | null;
-    customer?: { customerId: number; name: string } | null;
-    contact?: {
-        contactId: number;
-        firstName: string;
-        lastName: string;
-        phoneNumber: string;
-        mail: string;
-    } | null;
-}
+export type ErrandDetails = {
+    errandId: number;
+    createdAt: string;
+    title: string;
+    description: string | null;
+    status: ErrandStatus;
+    priority: ErrandPriority;
+    history: ErrandHistoryItem[];
+    assignee: ErrandAssignee | null;
+    customer: ErrandCustomer | null;
+    contact: ErrandContact | null;
+    timeSpent: number | null;
+    agreedPrice: number | null;
+};
