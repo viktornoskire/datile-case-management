@@ -45,7 +45,7 @@ export const ErrandCard = ({
 
     return (
         <article
-            className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
             <div className="h-1.5 w-full" style={{backgroundColor: accentColor}}/>
 
             <div className="flex h-full flex-col p-5">
@@ -158,7 +158,7 @@ export const ErrandCard = ({
                     <div className="space-y-4">
                         <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                             <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                                Ärendeinfo
+                                Ärende info
                             </div>
 
                             <div className="space-y-3 text-sm">
@@ -173,18 +173,6 @@ export const ErrandCard = ({
                                     <div className="font-semibold text-slate-500">Ärende ID</div>
                                     <div className="font-medium text-slate-900">
                                         {String(errand.errandId).padStart(3, "0")}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div className="font-semibold text-slate-500">Prioritet</div>
-                                    <div className="mt-1">
-                                        <span
-                                            className="inline-flex rounded-full border px-3 py-1 text-sm font-semibold"
-                                            style={badgeStyle}
-                                        >
-                                            {priorityName}
-                                        </span>
                                     </div>
                                 </div>
                             </div>

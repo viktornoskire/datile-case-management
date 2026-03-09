@@ -97,6 +97,7 @@ public class ErrandService {
                         ErrandHistoryRepository.HistoryPreviewRow::getErrandId,
                         java.util.stream.Collectors.mapping(
                                 row -> new dev.datile.dto.errands.HistoryEntryDto(
+                                        row.getHistoryId(),
                                         row.getDescription(),
                                         row.getVerifiedName(),
                                         row.getCreatedAt().toInstant()
@@ -127,6 +128,7 @@ public class ErrandService {
 
         final var history = historyRepo.findFullHistoryByErrandId(id).stream()
                 .map(h -> new dev.datile.dto.errands.HistoryEntryDto(
+                        h.getHistoryId(),
                         h.getDescription(),
                         h.getVerifiedName(),
                         h.getCreatedAt().toInstant()
@@ -147,22 +149,24 @@ public class ErrandService {
                         errand.getPriority().getName(),
                         errand.getPriority().getColor()
                 ),
+                history,
                 errand.getAssignee() == null ? null : new dev.datile.dto.errands.AssigneeDto(
                         errand.getAssignee().getAssigneeId(),
                         errand.getAssignee().getName()
                 ),
                 errand.getCustomer() == null ? null : new dev.datile.dto.errands.CustomerDto(
                         errand.getCustomer().getCustomerId(),
-                        errand.getCustomer().getName()
+                        errand.getCustomer().getName(),
+                        errand.getCustomer().getIsActive()
                 ),
                 errand.getContact() == null ? null : new dev.datile.dto.errands.ContactDto(
                         errand.getContact().getContactId(),
+                        errand.getContact().getCustomer().getCustomerId(),
                         errand.getContact().getFirstName(),
                         errand.getContact().getLastName(),
                         errand.getContact().getPhoneNumber(),
                         errand.getContact().getMail()
                 ),
-                history,
                 errand.getTimeSpent(),
                 errand.getAgreedPrice()
         );

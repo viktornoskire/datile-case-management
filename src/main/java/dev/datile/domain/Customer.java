@@ -16,6 +16,7 @@ public class Customer {
 
     protected Customer() {
     }
+    private Boolean isActive;
 
     public Customer(String name) {
         this.name = name;
@@ -27,5 +28,10 @@ public class Customer {
 
     public String getName() {
         return name;
+    }
+
+
+    public Boolean getIsActive() {
+        return isActive;
     }
 }

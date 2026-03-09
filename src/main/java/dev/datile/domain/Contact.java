@@ -11,6 +11,10 @@ public class Contact {
     @Column(name = "contact_id")
     private Long contactId;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
+
     @Column(name = "first_name", nullable = false, length = 255)
     private String firstName;
 
@@ -26,7 +30,8 @@ public class Contact {
     protected Contact() {
     }
 
-    public Contact(String firstName, String lastName, String phoneNumber, String mail) {
+    public Contact(Customer customer, String firstName, String lastName, String phoneNumber, String mail) {
+        this.customer = customer;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
@@ -35,6 +40,14 @@ public class Contact {
 
     public Long getContactId() {
         return contactId;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public Long getCustomerId() {
+        return customer != null ? customer.getCustomerId() : null;
     }
 
     public String getFirstName() {

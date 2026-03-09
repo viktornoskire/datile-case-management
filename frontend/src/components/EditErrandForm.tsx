@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import {type FormEvent, useEffect, useMemo, useState} from "react";
 import {
     addErrandHistoryEntry,
     updateErrand,
@@ -15,7 +15,7 @@ import {
     type PriorityOption,
     type StatusOption,
 } from "../api/LookupsApi";
-import type { ErrandDetails } from "../types/errands";
+import type {ErrandDetails} from "../types/errands";
 
 type EditErrandFormProps = {
     errand: ErrandDetails;
@@ -344,7 +344,7 @@ export const EditErrandForm = ({
                         htmlFor="title"
                         className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
                     >
-                        Namn
+                        Titel
                     </label>
                     <input
                         id="title"
@@ -430,9 +430,11 @@ export const EditErrandForm = ({
 
                 <div>
                     <label
-                        htmlFor="priority"
-                        className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
-                    >
+                        className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <span
+        className="inline-block h-2.5 w-2.5 rounded-full"
+        style={{backgroundColor: selectedPriority?.color ?? "#FFFFFF"}}
+    />
                         Prioritet
                     </label>
                     <select
@@ -467,7 +469,7 @@ export const EditErrandForm = ({
                         id="timeSpent"
                         type="number"
                         min="0"
-                        step="0.1"
+                        step="0.5"
                         value={timeSpent}
                         onChange={(event) => setTimeSpent(event.target.value)}
                         className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
@@ -485,7 +487,7 @@ export const EditErrandForm = ({
                         id="agreedPrice"
                         type="number"
                         min="0"
-                        step="0.01"
+                        step="100"
                         value={agreedPrice}
                         onChange={(event) => setAgreedPrice(event.target.value)}
                         className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
@@ -523,24 +525,6 @@ export const EditErrandForm = ({
                             </>
                         )}
                     </select>
-                </div>
-
-                <div>
-                    <label
-                        htmlFor="priorityColorPreview"
-                        className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
-                    >
-                        Prioritet
-                    </label>
-                    <div className="flex h-[42px] items-center rounded-md border border-slate-200 px-3">
-            <span
-                className="mr-3 inline-block h-4 w-4 rounded-full border border-slate-300"
-                style={{ backgroundColor: selectedPriority?.color ?? "#FFFFFF" }}
-            />
-                        <span className="text-sm text-slate-700">
-              {selectedPriority?.name ?? "Ingen prioritet vald"}
-            </span>
-                    </div>
                 </div>
             </div>
 

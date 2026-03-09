@@ -8,6 +8,7 @@ export type ErrandsResponse = {
 
 export type ErrandHistoryItem = {
     description: string;
+    historyId: number;
     verifiedName: string;
     createdAt: string;
 };
@@ -21,6 +22,7 @@ export type ErrandPriority = {
     priorityId: number;
     name: string;
     color: string;
+    isDefault: boolean;
 };
 
 export type ErrandAssignee = {
@@ -31,14 +33,16 @@ export type ErrandAssignee = {
 export type ErrandCustomer = {
     customerId: number;
     name: string;
+    isActive: boolean;
 };
 
 export type ErrandContact = {
+    customerId: number;
     contactId: number;
     firstName: string;
     lastName: string;
-    phoneNumber: string;
-    mail: string;
+    phoneNumber: string | null;
+    mail: string | null;
 };
 
 export type ErrandListItem = {

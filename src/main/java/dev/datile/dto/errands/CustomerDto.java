@@ -2,6 +2,7 @@ package dev.datile.dto.errands;
 
 public record CustomerDto(
         Long customerId,
-        String name
+        String name,
+        Boolean isActive
 ) {
 }

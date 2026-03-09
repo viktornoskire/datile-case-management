@@ -3,10 +3,9 @@ package dev.datile.dto.errands;
 import java.time.Instant;
 import java.util.List;
 
-/* A light errand object that is suitable for the list/cards
- * We only send what is necessary to show the list - not every single detail.
- * DTOs´ keeps JPA entities un-exposed */
-
+/* A light errand object suitable for list/cards.
+ * historyPreview contains at most 2 latest history entries, ordered newest first.
+ */
 public record ErrandListItemDto(
         Long errandId,
         Instant createdAt,
@@ -14,7 +13,9 @@ public record ErrandListItemDto(
         String description,
         StatusDto status,
         PriorityDto priority,
-        List<HistoryEntryDto> historyPreview
-        // later customer/priority/assignee
+        List<HistoryEntryDto> historyPreview,
+        AssigneeDto assignee,
+        CustomerDto customer,
+        ContactDto contact
 ) {
 }

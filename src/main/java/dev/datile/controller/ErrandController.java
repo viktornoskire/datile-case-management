@@ -1,8 +1,8 @@
 package dev.datile.controller;
 
 import dev.datile.dto.errands.AddHistoryEntryDto;
-import dev.datile.dto.errands.ErrandDetailsDto;
 import dev.datile.dto.errands.ErrandsResponseDto;
+import dev.datile.dto.errands.ErrandDetailsDto;
 import dev.datile.dto.errands.UpdateErrandDto;
 import dev.datile.service.ErrandService;
 import jakarta.validation.Valid;

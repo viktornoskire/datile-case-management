@@ -24,6 +24,7 @@ public class ContactController {
         return contactRepository.findAll(Sort.by("contactId")).stream()
                 .map(contact -> new ContactDto(
                         contact.getContactId(),
+                        contact.getCustomer().getCustomerId(),
                         contact.getFirstName(),
                         contact.getLastName(),
                         contact.getPhoneNumber(),

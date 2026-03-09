@@ -24,7 +24,8 @@ public class CustomerController {
         return customerRepository.findAll(Sort.by("customerId")).stream()
                 .map(customer -> new CustomerDto(
                         customer.getCustomerId(),
-                        customer.getName()
+                        customer.getName(),
+                        customer.getIsActive()
                 ))
                 .toList();
     }
