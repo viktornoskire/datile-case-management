@@ -107,7 +107,7 @@ export default function Errands() {
             </div>
 
             {view === "cards" ? (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                     {data.errands.map((e) => (
                         <ErrandCard key={e.errandId} errand={e} onOpen={openModal}/>
                     ))}

@@ -45,13 +45,23 @@ export const ErrandCard = ({
 
     return (
         <article
-            className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="h-1.5 w-full" style={{backgroundColor: accentColor}}/>
+            role="button"
+            tabIndex={0}
+            className="flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            onClick={() => onOpen(errand.errandId)}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onOpen(errand.errandId);
+                }
+            }}
+        >
+            <div className="h-1 w-full" style={{ backgroundColor: accentColor }} />
 
-            <div className="flex h-full flex-col p-5">
-                <div className="mb-5 flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
+            <div className="flex h-full flex-col p-3">
+                <div className="mb-3 flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
                     <div className="min-w-0">
-                        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
                             Ärende
                         </div>
 
@@ -68,9 +78,9 @@ export const ErrandCard = ({
                     </span>
                 </div>
 
-                <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-                    <div className="space-y-4">
-                        <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="grid gap-4 lg:grid-cols-[1fr_0.50fr]">
+                    <div className="space-y-2">
+                        <section className="rounded-xl border border-slate-200 bg-slate-50 p-2">
                             <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
                                 Översikt
                             </div>
@@ -128,7 +138,7 @@ export const ErrandCard = ({
                             </div>
                         </section>
 
-                        <section className="rounded-xl border border-slate-200 bg-white p-4">
+                        <section className="rounded-xl border border-slate-200 bg-white p-2">
                             <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
                                 Historik
                             </div>
@@ -136,11 +146,11 @@ export const ErrandCard = ({
                             {history.length === 0 ? (
                                 <div className="text-sm text-slate-500">Ingen historik än.</div>
                             ) : (
-                                <ul className="space-y-3">
+                                <ul className="space-y-2">
                                     {history.map((h, index) => (
                                         <li
                                             key={index}
-                                            className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                                            className="rounded-xl border border-slate-200 bg-slate-50 p-2"
                                         >
                                             <div className="text-sm font-semibold text-slate-900">
                                                 {h.description}
@@ -155,8 +165,8 @@ export const ErrandCard = ({
                         </section>
                     </div>
 
-                    <div className="space-y-4">
-                        <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="space-y-2">
+                        <section className="rounded-xl border border-slate-200 bg-slate-50 p-2">
                             <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
                                 Ärende info
                             </div>
@@ -179,12 +189,14 @@ export const ErrandCard = ({
                         </section>
                     </div>
                 </div>
-
-                <div className="mt-auto flex justify-end pt-5">
+                <div className="mt-0 flex justify-end">
                     <button
                         type="button"
-                        className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-                        onClick={() => onOpen(errand.errandId)}
+                        className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onOpen(errand.errandId);
+                        }}
                     >
                         Visa mer
                     </button>

@@ -1,5 +1,5 @@
-import type { ErrandListItem } from "../types/errands";
-import { getPriorityStyles } from "../utils/priorityStyles";
+import type {ErrandListItem} from "../types/errands";
+import {getPriorityStyles} from "../utils/priorityStyles";
 
 /* React component to show errands in the list view */
 
@@ -29,7 +29,7 @@ export const ErrandListRow = ({
     errand: ErrandListItem;
     onOpen: (errandId: number) => void;
 }) => {
-    const { name: priorityName, accentStyle, badgeStyle, valueStyle } =
+    const {name: priorityName, accentStyle, badgeStyle, valueStyle} =
         getPriorityStyles(errand.priority);
 
     const customerName = errand.customer?.name ?? "—";
@@ -47,13 +47,24 @@ export const ErrandListRow = ({
         }, undefined as (typeof errand.historyPreview)[number] | undefined) ?? null;
 
     return (
-        <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="h-1 w-full" style={accentStyle} />
+        <article
+            role="button"
+            tabIndex={0}
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm cursor-pointer"
+            onClick={() => onOpen(errand.errandId)}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onOpen(errand.errandId);
+                }
+            }}
+        >
+            <div className="h-1 w-full" style={accentStyle}/>
 
-            <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.6fr)_160px_160px_120px_auto] lg:items-center">
+            <div className="grid gap-4 p-2 lg:grid-cols-[minmax(0,1.6fr)_160px_160px_120px_auto] lg:items-center">
                 <div className="min-w-0">
                     <div className="truncate text-base font-semibold text-slate-900">
-                        <span className="text-slate-500">Titel: </span>
+                        <span className="text-slate-500">Ärende: </span>
                         <span style={valueStyle}>{safe(errand.title)}</span>
                     </div>
 
@@ -124,7 +135,10 @@ export const ErrandListRow = ({
                     <button
                         type="button"
                         className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-                        onClick={() => onOpen(errand.errandId)}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onOpen(errand.errandId);
+                        }}
                     >
                         Visa mer
                     </button>
