@@ -1,6 +1,8 @@
-import {type FormEvent, useEffect, useMemo, useState} from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import {
     addErrandHistoryEntry,
+    deletePurchase,
+    fetchErrandById,
     updateErrand,
 } from "../api/errandsApi";
 import {
@@ -15,7 +17,8 @@ import {
     type PriorityOption,
     type StatusOption,
 } from "../api/LookupsApi";
-import type {ErrandDetails} from "../types/errands";
+import type { ErrandDetails } from "../types/errands";
+import { AddPurchaseForm } from "./AddPurchaseForm";
 
 type EditErrandFormProps = {
     errand: ErrandDetails;
@@ -38,6 +41,17 @@ const formatDateTime = (iso?: string | null) => {
         hour: "2-digit",
         minute: "2-digit",
     });
+};
+
+const formatMoney = (value?: number | null) => {
+    if (value === null || value === undefined) return "—";
+
+    return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: "SEK",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value);
 };
 
 const parseNullableNumber = (value: string) => {
@@ -93,6 +107,11 @@ export const EditErrandForm = ({
     const [isAddingHistory, setIsAddingHistory] = useState(false);
     const [historyItems, setHistoryItems] = useState(errand.history ?? []);
 
+    const [purchases, setPurchases] = useState(errand.purchases ?? []);
+    const [isAddingPurchase, setIsAddingPurchase] = useState(false);
+    const [purchaseIdToDelete, setPurchaseIdToDelete] = useState<number | null>(null);
+    const [isDeletingPurchase, setIsDeletingPurchase] = useState(false);
+
     const [statuses, setStatuses] = useState<StatusOption[]>([]);
     const [priorities, setPriorities] = useState<PriorityOption[]>([]);
     const [assignees, setAssignees] = useState<AssigneeOption[]>([]);
@@ -115,7 +134,10 @@ export const EditErrandForm = ({
         setTimeSpent(errand.timeSpent != null ? String(errand.timeSpent) : "");
         setAgreedPrice(errand.agreedPrice != null ? String(errand.agreedPrice) : "");
         setHistoryItems(errand.history ?? []);
+        setPurchases(errand.purchases ?? []);
         setNewHistoryEntry("");
+        setIsAddingPurchase(false);
+        setPurchaseIdToDelete(null);
         setSubmitError("");
     }, [errand]);
 
@@ -146,35 +168,11 @@ export const EditErrandForm = ({
                 contactsResult,
             ] = results;
 
-            if (statusesResult.status === "fulfilled") {
-                setStatuses(statusesResult.value);
-            } else {
-                setStatuses([]);
-            }
-
-            if (prioritiesResult.status === "fulfilled") {
-                setPriorities(prioritiesResult.value);
-            } else {
-                setPriorities([]);
-            }
-
-            if (assigneesResult.status === "fulfilled") {
-                setAssignees(assigneesResult.value);
-            } else {
-                setAssignees([]);
-            }
-
-            if (customersResult.status === "fulfilled") {
-                setCustomers(customersResult.value);
-            } else {
-                setCustomers([]);
-            }
-
-            if (contactsResult.status === "fulfilled") {
-                setContacts(contactsResult.value);
-            } else {
-                setContacts([]);
-            }
+            setStatuses(statusesResult.status === "fulfilled" ? statusesResult.value : []);
+            setPriorities(prioritiesResult.status === "fulfilled" ? prioritiesResult.value : []);
+            setAssignees(assigneesResult.status === "fulfilled" ? assigneesResult.value : []);
+            setCustomers(customersResult.status === "fulfilled" ? customersResult.value : []);
+            setContacts(contactsResult.status === "fulfilled" ? contactsResult.value : []);
 
             const failures: string[] = [];
 
@@ -219,6 +217,47 @@ export const EditErrandForm = ({
         [priorities, priorityId, errand.priority],
     );
 
+    const reloadErrand = async () => {
+        const updatedErrand = await fetchErrandById(errand.errandId);
+        setHistoryItems(updatedErrand.history ?? []);
+        setPurchases(updatedErrand.purchases ?? []);
+        onSaved(updatedErrand);
+    };
+
+    const handleDeletePurchaseClick = (purchaseId: number) => {
+        setSubmitError("");
+        setPurchaseIdToDelete(purchaseId);
+    };
+
+    const confirmDeletePurchase = async () => {
+        if (purchaseIdToDelete === null) {
+            return;
+        }
+
+        try {
+            setIsDeletingPurchase(true);
+            await deletePurchase(purchaseIdToDelete);
+            await reloadErrand();
+            setPurchaseIdToDelete(null);
+        } catch (error) {
+            if (error instanceof Error && error.message.trim()) {
+                setSubmitError(`Kunde inte ta bort inköpet. ${error.message}`);
+            } else {
+                setSubmitError("Kunde inte ta bort inköpet.");
+            }
+        } finally {
+            setIsDeletingPurchase(false);
+        }
+    };
+
+    const cancelDeletePurchase = () => {
+        if (isDeletingPurchase) {
+            return;
+        }
+
+        setPurchaseIdToDelete(null);
+    };
+
     const handleAddHistoryEntry = async () => {
         setSubmitError("");
 
@@ -235,6 +274,7 @@ export const EditErrandForm = ({
 
             setHistoryItems(updatedErrand.history ?? []);
             setNewHistoryEntry("");
+            onSaved(updatedErrand);
         } catch (error) {
             if (error instanceof Error && error.message.trim()) {
                 setSubmitError(`Kunde inte lägga till historikrad. ${error.message}`);
@@ -429,12 +469,11 @@ export const EditErrandForm = ({
                 </div>
 
                 <div>
-                    <label
-                        className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-    <span
-        className="inline-block h-2.5 w-2.5 rounded-full"
-        style={{backgroundColor: selectedPriority?.color ?? "#FFFFFF"}}
-    />
+                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <span
+                            className="inline-block h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: selectedPriority?.color ?? "#FFFFFF" }}
+                        />
                         Prioritet
                     </label>
                     <select
@@ -559,13 +598,13 @@ export const EditErrandForm = ({
                         </label>
 
                         <div className="flex gap-3">
-              <textarea
-                  id="newHistoryEntry"
-                  value={newHistoryEntry}
-                  onChange={(event) => setNewHistoryEntry(event.target.value)}
-                  placeholder="Skriv en ny rad i historiken..."
-                  className="min-h-24 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
-              />
+                            <textarea
+                                id="newHistoryEntry"
+                                value={newHistoryEntry}
+                                onChange={(event) => setNewHistoryEntry(event.target.value)}
+                                placeholder="Skriv en ny rad i historiken..."
+                                className="min-h-24 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                            />
 
                             <button
                                 type="button"
@@ -599,38 +638,144 @@ export const EditErrandForm = ({
                             </ul>
                         )}
                     </div>
+
+                    <div className="space-y-3 pt-2">
+                        <div className="mb-2 text-base font-bold uppercase tracking-wide text-slate-700">
+                            Inköp
+                        </div>
+
+                        {purchases.length === 0 ? (
+                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                                Inga inköp än.
+                            </div>
+                        ) : (
+                            <ul className="space-y-3">
+                                {purchases.map((purchase) => {
+                                    const profit = Number(purchase.profit ?? 0);
+
+                                    return (
+                                        <li
+                                            key={purchase.purchaseId}
+                                            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <div className="text-sm font-semibold text-slate-900">
+                                                        {purchase.itemName}
+                                                    </div>
+                                                    <div className="mt-1 text-xs text-slate-500">
+                                                        {purchase.quantity} st
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <span
+                                                        className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${
+                                                            profit > 0
+                                                                ? "border-green-200 bg-green-50 text-green-700"
+                                                                : profit < 0
+                                                                    ? "border-red-200 bg-red-50 text-red-700"
+                                                                    : "border-slate-200 bg-slate-50 text-slate-600"
+                                                        }`}
+                                                    >
+                                                        {profit > 0 ? "+" : ""}
+                                                        {profit.toFixed(2)} kr
+                                                    </span>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeletePurchaseClick(purchase.purchaseId)}
+                                                        className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
+                                                    >
+                                                        Ta bort
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+                                                <div>Inköpspris: {formatMoney(purchase.purchasePrice)}</div>
+                                                <div>Frakt: {formatMoney(purchase.shippingCost)}</div>
+                                                <div className="font-semibold">
+                                                    Utpris: {formatMoney(purchase.salePrice)}
+                                                </div>
+                                                <div>Total kostnad: {formatMoney(purchase.totalPurchaseCost)}</div>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+
+                        {purchaseIdToDelete !== null && (
+                            <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+                                <div className="text-sm font-semibold text-red-800">
+                                    Bekräfta borttagning
+                                </div>
+                                <div className="mt-1 text-sm text-red-700">
+                                    Är du säker på att du vill ta bort detta inköp?
+                                </div>
+
+                                <div className="mt-3 flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={confirmDeletePurchase}
+                                        disabled={isDeletingPurchase}
+                                        className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                                    >
+                                        {isDeletingPurchase ? "Tar bort..." : "Ja"}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={cancelDeletePurchase}
+                                        disabled={isDeletingPurchase}
+                                        className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                                    >
+                                        Nej
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {!isAddingPurchase ? (
+                            <button
+                                type="button"
+                                onClick={() => setIsAddingPurchase(true)}
+                                className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            >
+                                + Lägg till inköp
+                            </button>
+                        ) : (
+                            <AddPurchaseForm
+                                errandId={errand.errandId}
+                                onSaved={async () => {
+                                    await reloadErrand();
+                                    setIsAddingPurchase(false);
+                                }}
+                                onCancel={() => setIsAddingPurchase(false)}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
-                <div>
-                    <div className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Inköp
-                    </div>
+            <div className="flex flex-wrap gap-3">
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    disabled={isSaving || isAddingHistory || isDeletingPurchase}
+                    className="rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                >
+                    Avbryt
+                </button>
 
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
-                        Inköp är ännu inte kopplat till edit-flödet.
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        disabled={isSaving || isAddingHistory}
-                        className="rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                    >
-                        Avbryt
-                    </button>
-
-                    <button
-                        type="submit"
-                        disabled={isSaving || isAddingHistory}
-                        className="rounded-full bg-emerald-300 px-8 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 disabled:opacity-50"
-                    >
-                        {isSaving ? "Sparar..." : "Spara ärende"}
-                    </button>
-                </div>
+                <button
+                    type="submit"
+                    disabled={isSaving || isAddingHistory || isDeletingPurchase}
+                    className="rounded-full bg-emerald-300 px-8 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 disabled:opacity-50"
+                >
+                    {isSaving ? "Sparar..." : "Spara ärende"}
+                </button>
             </div>
 
             {lookupError ? (

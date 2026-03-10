@@ -51,6 +51,26 @@ public class Purchase {
         this.salePrice = salePrice;
     }
 
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setPurchasePrice(BigDecimal purchasePrice) {
+        this.purchasePrice = purchasePrice;
+    }
+
+    public void setShippingCost(BigDecimal shippingCost) {
+        this.shippingCost = shippingCost;
+    }
+
+    public void setSalePrice(BigDecimal salePrice) {
+        this.salePrice = salePrice;
+    }
+
     public Long getPurchaseId() {
         return purchaseId;
     }
@@ -93,3 +113,4 @@ public class Purchase {
         return getTotalSaleValue().subtract(getTotalPurchaseCost());
     }
 }
+

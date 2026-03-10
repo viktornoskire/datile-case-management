@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { fetchErrandById } from "../api/errandsApi";
 import { EditErrandForm } from "./EditErrandForm";
 import type { ErrandDetails } from "../types/errands";
+import { AddPurchaseForm } from "./AddPurchaseForm";
 
 type ErrandDetailsModalProps = {
     errandId: number;
@@ -201,6 +202,11 @@ export const ErrandDetailsModal = ({
         onErrandUpdated(updatedErrand);
     };
 
+    const reloadErrand = async () => {
+        const updated = await fetchErrandById(errandId);
+        setData(updated);
+    };
+
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
@@ -372,14 +378,9 @@ export const ErrandDetailsModal = ({
                                                                 <div>
                                                                     Frakt: {formatMoney(purchase.shippingCost)}
                                                                 </div>
-                                                                <div>
-                                                                    Utpris: {formatMoney(purchase.salePrice)}
-                                                                </div>
+                                                                <div className="font-semibold">Utpris: {formatMoney(purchase.salePrice)}</div>
                                                                 <div>
                                                                     Total kostnad: {formatMoney(purchase.totalPurchaseCost)}
-                                                                </div>
-                                                                <div className="sm:col-span-2">
-                                                                    Totalt utpris: {formatMoney(purchase.totalSaleValue)}
                                                                 </div>
                                                             </div>
                                                         </li>
@@ -449,25 +450,14 @@ export const ErrandDetailsModal = ({
                                             </button>
 
                                             {isAddingPurchase && (
-                                                <section className="rounded-2xl border border-slate-200 bg-white p-5">
-                                                    <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                                                        Nytt inköp
-                                                    </h3>
-
-                                                    <div className="text-sm text-slate-600">
-                                                        Här ska formuläret för nytt inköp visas.
-                                                    </div>
-
-                                                    <div className="mt-4">
-                                                        <button
-                                                            type="button"
-                                                            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                                                            onClick={() => setIsAddingPurchase(false)}
-                                                        >
-                                                            Avbryt
-                                                        </button>
-                                                    </div>
-                                                </section>
+                                                <AddPurchaseForm
+                                                    errandId={errandId}
+                                                    onSaved={async () => {
+                                                        await reloadErrand();
+                                                        setIsAddingPurchase(false);
+                                                    }}
+                                                    onCancel={() => setIsAddingPurchase(false)}
+                                                />
                                             )}
 
                                             <button
