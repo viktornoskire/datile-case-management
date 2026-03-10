@@ -759,12 +759,10 @@ export const EditErrandForm = ({
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex justify-end gap-3">
                 <button
                     type="button"
-                    onClick={onCancel}
-                    disabled={isSaving || isAddingHistory || isDeletingPurchase}
-                    className="rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    className="rounded-full border border-slate-300 px-8 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
                 >
                     Avbryt
                 </button>
@@ -772,7 +770,8 @@ export const EditErrandForm = ({
                 <button
                     type="submit"
                     disabled={isSaving || isAddingHistory || isDeletingPurchase}
-                    className="rounded-full bg-emerald-300 px-8 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-400 disabled:opacity-50"
+                    className="rounded-full px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#88c3a7] disabled:opacity-50"
+                    style={{ backgroundColor: "#99D0B6" }}
                 >
                     {isSaving ? "Sparar..." : "Spara ärende"}
                 </button>
