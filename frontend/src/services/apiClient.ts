@@ -45,6 +45,7 @@ const request = async <T>(
 ): Promise<T> => {
     const res = await fetch(toUrl(path), {
         ...init,
+        credentials: "include",
         headers: {
             Accept: "application/json",
             ...(init.body ? {"Content-Type": "application/json"} : {}),
