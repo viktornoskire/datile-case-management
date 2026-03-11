@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import {Header} from "./index.ts";
 
 export function ProtectedRoutes() {
     const { user, loading } = useAuth();
@@ -13,5 +14,10 @@ export function ProtectedRoutes() {
         return <Navigate to="/login" replace />;
     }
 
-    return <Outlet />;
+    return (
+        <>
+            <Header />
+            <Outlet />
+        </>
+    );
 }

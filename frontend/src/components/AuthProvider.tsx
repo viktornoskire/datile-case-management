@@ -10,7 +10,6 @@ type AuthContextType = {
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    console.log("AuthProvider mounted");
 
     const [user, setUser] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -29,7 +28,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     useEffect(() => {
-        console.log("Running refreshAuth");
         refreshAuth();
     }, []);
 
