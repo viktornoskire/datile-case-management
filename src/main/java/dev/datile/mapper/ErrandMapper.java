@@ -47,7 +47,7 @@ public class ErrandMapper {
                 toAssigneeDto(e.getAssignee()),
                 toCustomerDto(e.getCustomer()),
                 toContactDto(e.getContact()),
-                e.getTimeSpent(),
+                e.getTimeSpent() != null ? e.getTimeSpent().doubleValue() : null,
                 e.getAgreedPrice()
         );
     }

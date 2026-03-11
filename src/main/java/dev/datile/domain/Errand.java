@@ -47,8 +47,8 @@ public class Errand {
     @JoinColumn(name = "contact_id")
     private Contact contact;
 
-    @Column(name = "time_spent")
-    private Double timeSpent;
+    @Column(name = "time_spent", precision = 10, scale = 2)
+    private BigDecimal timeSpent;
 
     @Column(name = "agreed_price", precision = 12, scale = 2)
     private BigDecimal agreedPrice;
@@ -100,7 +100,7 @@ public class Errand {
         return contact;
     }
 
-    public Double getTimeSpent() {
+    public BigDecimal getTimeSpent() {
         return timeSpent;
     }
 
@@ -136,11 +136,11 @@ public class Errand {
         this.contact = contact;
     }
 
-    public void setTimeSpent(Double timeSpent) {
-        this.timeSpent = timeSpent;
-    }
-
     public void setAgreedPrice(BigDecimal agreedPrice) {
         this.agreedPrice = agreedPrice;
+    }
+
+    public void setTimeSpent(BigDecimal timeSpent) {
+        this.timeSpent = timeSpent;
     }
 }

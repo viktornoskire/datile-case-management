@@ -196,7 +196,9 @@ public class ErrandService {
         errand.setAssignee(assignee);
         errand.setCustomer(customer);
         errand.setContact(contact);
-        errand.setTimeSpent(request.timeSpent());
+        errand.setTimeSpent(
+                request.timeSpent() != null ? BigDecimal.valueOf(request.timeSpent()) : null
+        );
         errand.setAgreedPrice(request.agreedPrice());
 
         repo.save(errand);
@@ -232,7 +234,9 @@ public class ErrandService {
         errand.setAssignee(assignee);
         errand.setCustomer(customer);
         errand.setContact(contact);
-        errand.setTimeSpent(request.timeSpent());
+        errand.setTimeSpent(
+                request.timeSpent() != null ? BigDecimal.valueOf(request.timeSpent()) : null
+        );
         errand.setAgreedPrice(BigDecimal.valueOf(request.agreedPrice()));
 
         Errand savedErrand = repo.save(errand);
