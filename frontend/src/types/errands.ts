@@ -1,3 +1,38 @@
+export type CreateErrandPurchaseRequest = {
+    itemName: string;
+    quantity: number;
+    purchasePrice: number;
+    shippingCost: number;
+    salePrice: number;
+};
+
+export type CreateErrandRequest = {
+    title: string;
+    description: string;
+    customerId: number;
+    contactId: number;
+    assigneeId: number;
+    statusId: number;
+    priorityId: number;
+    timeSpent: number;
+    agreedPrice: number;
+    purchases: CreateErrandPurchaseRequest[];
+};
+
+export type CreateErrandResponse = {
+    errandId: number;
+    createdAt: string;
+    title: string;
+    assignee: ErrandAssignee | null;
+    customer: ErrandCustomer | null;
+    contact: ErrandContact | null;
+};
+
+export type AddErrandHistoryRequest = {
+    description: string;
+};
+
+
 export type ErrandsResponse = {
     errands: ErrandListItem[];
     page: number;

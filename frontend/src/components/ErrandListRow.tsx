@@ -134,7 +134,7 @@ export const ErrandListRow = ({
 
                     <button
                         type="button"
-                        className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        className="rounded-full bg-[#0A1633] px-4 py-0.5 text-sm font-semibold text-white transition hover:bg-[#13224A]"
                         onClick={(event) => {
                             event.stopPropagation();
                             onOpen(errand.errandId);

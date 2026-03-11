@@ -6,10 +6,14 @@ import dev.datile.domain.Customer;
 import dev.datile.domain.Errand;
 import dev.datile.domain.ErrandHistoryEntry;
 import dev.datile.domain.Priority;
+import dev.datile.domain.Purchase;
 import dev.datile.domain.Status;
 import dev.datile.dto.errands.AddHistoryEntryDto;
+import dev.datile.dto.errands.CreateErrandDto;
+import dev.datile.dto.errands.CreatePurchaseDto;
 import dev.datile.dto.errands.ErrandDetailsDto;
 import dev.datile.dto.errands.ErrandsResponseDto;
+import dev.datile.dto.errands.HistoryEntryDto;
 import dev.datile.dto.errands.UpdateErrandDto;
 import dev.datile.mapper.ErrandMapper;
 import dev.datile.repository.AssigneeRepository;
@@ -18,6 +22,7 @@ import dev.datile.repository.CustomerRepository;
 import dev.datile.repository.ErrandHistoryRepository;
 import dev.datile.repository.ErrandRepository;
 import dev.datile.repository.PriorityRepository;
+import dev.datile.repository.PurchaseRepository;
 import dev.datile.repository.StatusRepository;
 import dev.datile.spec.ErrandSpecifications;
 import org.springframework.data.domain.PageRequest;
@@ -25,20 +30,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
-import dev.datile.repository.PurchaseRepository;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-
-/* This is the EDIT LOGIC, aka service layer that pulls the data.
- * Service layers´ responsibility = business logic and orchestration.
- * ErrandService takes pagination and sort, pulls from ErrandRepository and maps to DTO.
- * + Returns the format that we want! This also saves data to the DB and returns updated details.
- * */
 
 @Service
 public class ErrandService {
@@ -100,7 +99,7 @@ public class ErrandService {
                 .collect(java.util.stream.Collectors.groupingBy(
                         ErrandHistoryRepository.HistoryPreviewRow::getErrandId,
                         java.util.stream.Collectors.mapping(
-                                row -> new dev.datile.dto.errands.HistoryEntryDto(
+                                row -> new HistoryEntryDto(
                                         row.getHistoryId(),
                                         row.getDescription(),
                                         row.getVerifiedName(),
@@ -125,13 +124,14 @@ public class ErrandService {
                 result.getTotalPages()
         );
     }
+
     @Transactional(readOnly = true)
     public ErrandDetailsDto getById(Long id) {
         Errand errand = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ärende inte hittat"));
 
         final var history = historyRepo.findFullHistoryByErrandId(id).stream()
-                .map(h -> new dev.datile.dto.errands.HistoryEntryDto(
+                .map(h -> new HistoryEntryDto(
                         h.getHistoryId(),
                         h.getDescription(),
                         h.getVerifiedName(),
@@ -149,6 +149,7 @@ public class ErrandService {
                 purchases
         );
     }
+
     @Transactional
     public ErrandDetailsDto update(Long id, UpdateErrandDto request) {
         Errand errand = repo.findById(id)
@@ -192,6 +193,58 @@ public class ErrandService {
 
         return getById(errand.getErrandId());
     }
+
+    @Transactional
+    public ErrandDetailsDto create(CreateErrandDto request) {
+        Status status = statusRepo.findById(request.statusId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ogiltigt statusId"));
+
+        Priority priority = priorityRepo.findById(request.priorityId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ogiltigt priorityId"));
+
+        Assignee assignee = assigneeRepo.findById(request.assigneeId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ogiltigt assigneeId"));
+
+        Customer customer = customerRepo.findById(request.customerId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ogiltigt customerId"));
+
+        Contact contact = contactRepo.findById(request.contactId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ogiltigt contactId"));
+
+        Errand errand = new Errand(
+                request.title().trim(),
+                request.description() != null ? request.description().trim() : null,
+                status,
+                priority,
+                Instant.now()
+        );
+
+        errand.setAssignee(assignee);
+        errand.setCustomer(customer);
+        errand.setContact(contact);
+        errand.setTimeSpent(request.timeSpent());
+        errand.setAgreedPrice(BigDecimal.valueOf(request.agreedPrice()));
+
+        Errand savedErrand = repo.save(errand);
+
+        if (request.purchases() != null && !request.purchases().isEmpty()) {
+            for (CreatePurchaseDto purchaseDto : request.purchases()) {
+                Purchase purchase = new Purchase(
+                        savedErrand,
+                        purchaseDto.itemName().trim(),
+                        purchaseDto.quantity(),
+                        purchaseDto.purchasePrice(),
+                        purchaseDto.shippingCost(),
+                        purchaseDto.salePrice()
+                );
+
+                purchaseRepo.save(purchase);
+            }
+        }
+
+        return getById(savedErrand.getErrandId());
+    }
+
     @Transactional
     public ErrandDetailsDto addHistoryEntry(Long id, AddHistoryEntryDto request) {
         Errand errand = repo.findById(id)

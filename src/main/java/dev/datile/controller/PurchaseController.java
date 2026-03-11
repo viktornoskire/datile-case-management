@@ -37,11 +37,11 @@ public class PurchaseController {
 
         Purchase purchase = new Purchase(
                 errand,
-                request.itemName,
-                request.quantity,
-                request.purchasePrice,
-                request.shippingCost,
-                request.salePrice
+                request.itemName().trim(),
+                request.quantity(),
+                request.purchasePrice(),
+                request.shippingCost(),
+                request.salePrice()
         );
 
         Purchase savedPurchase = purchaseRepository.save(purchase);
@@ -57,11 +57,11 @@ public class PurchaseController {
         Purchase purchase = purchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase not found"));
 
-        purchase.setItemName(request.itemName);
-        purchase.setQuantity(request.quantity);
-        purchase.setPurchasePrice(request.purchasePrice);
-        purchase.setShippingCost(request.shippingCost);
-        purchase.setSalePrice(request.salePrice);
+        purchase.setItemName(request.itemName().trim());
+        purchase.setQuantity(request.quantity());
+        purchase.setPurchasePrice(request.purchasePrice());
+        purchase.setShippingCost(request.shippingCost());
+        purchase.setSalePrice(request.salePrice());
 
         Purchase savedPurchase = purchaseRepository.save(purchase);
 

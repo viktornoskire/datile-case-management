@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import {type FormEvent, useEffect, useMemo, useState} from "react";
 import {
     addErrandHistoryEntry,
     deletePurchase,
@@ -17,8 +17,8 @@ import {
     type PriorityOption,
     type StatusOption,
 } from "../api/LookupsApi";
-import type { ErrandDetails } from "../types/errands";
-import { AddPurchaseForm } from "./AddPurchaseForm";
+import type {ErrandDetails} from "../types/errands";
+import {AddPurchaseForm} from "./AddPurchaseForm";
 
 type EditErrandFormProps = {
     errand: ErrandDetails;
@@ -469,10 +469,11 @@ export const EditErrandForm = ({
                 </div>
 
                 <div>
-                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <label
+                        className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                         <span
                             className="inline-block h-2.5 w-2.5 rounded-full"
-                            style={{ backgroundColor: selectedPriority?.color ?? "#FFFFFF" }}
+                            style={{backgroundColor: selectedPriority?.color ?? "#FFFFFF"}}
                         />
                         Prioritet
                     </label>
@@ -741,9 +742,10 @@ export const EditErrandForm = ({
                             <button
                                 type="button"
                                 onClick={() => setIsAddingPurchase(true)}
-                                className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                                className="rounded-full border border-slate-200 bg-white px-6 py-2 text-sm font-semibold text-[#F08A7E] shadow-[0_2px_6px_rgba(15,23,42,0.12)] transition hover:bg-slate-50"
                             >
-                                + Lägg till inköp
+                                <span className="mr-2 text-slate-700">+</span>
+                                Lägg till inköp
                             </button>
                         ) : (
                             <AddPurchaseForm
@@ -772,7 +774,7 @@ export const EditErrandForm = ({
                     type="submit"
                     disabled={isSaving || isAddingHistory || isDeletingPurchase}
                     className="rounded-full px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#88c3a7] disabled:opacity-50"
-                    style={{ backgroundColor: "#99D0B6" }}
+                    style={{backgroundColor: "#99D0B6"}}
                 >
                     {isSaving ? "Sparar..." : "Spara ärende"}
                 </button>

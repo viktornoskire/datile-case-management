@@ -56,7 +56,7 @@ export const ErrandCard = ({
                 }
             }}
         >
-            <div className="h-1 w-full" style={{ backgroundColor: accentColor }} />
+            <div className="h-1 w-full" style={{backgroundColor: accentColor}}/>
 
             <div className="flex h-full flex-col p-3">
                 <div className="mb-3 flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
@@ -65,7 +65,7 @@ export const ErrandCard = ({
                             Ärende
                         </div>
 
-                        <h3 className="mt-2 line-clamp-2 text-lg font-bold text-slate-900">
+                        <h3 className="mt-1 line-clamp-2 text-base font-bold leading-5 text-slate-900">
                             {safe(errand.title)}
                         </h3>
                     </div>
@@ -78,7 +78,7 @@ export const ErrandCard = ({
                     </span>
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-[1fr_0.50fr]">
+                <div className="grid flex-1 gap-2 lg:grid-cols-[1fr_0.52fr]">
                     <div className="space-y-2">
                         <section className="rounded-xl border border-slate-200 bg-slate-50 p-2">
                             <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
@@ -189,10 +189,10 @@ export const ErrandCard = ({
                         </section>
                     </div>
                 </div>
-                <div className="mt-0 flex justify-end">
+                <div className="mt-auto flex justify-end">
                     <button
                         type="button"
-                        className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        className="rounded-full border border-white/40 bg-[#9BD3BC] px-5 py-0.5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(0,0,0,0.12) hover:bg-[#8BC9AF] hover:shadow-[0_6px_16px_rgba(0,0,0,0.16)]"
                         onClick={(event) => {
                             event.stopPropagation();
                             onOpen(errand.errandId);

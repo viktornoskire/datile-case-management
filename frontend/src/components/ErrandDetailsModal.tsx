@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
-import { fetchErrandById } from "../api/errandsApi";
-import { EditErrandForm } from "./EditErrandForm";
-import type { ErrandDetails } from "../types/errands";
-import { AddPurchaseForm } from "./AddPurchaseForm";
+import {useEffect, useMemo, useRef, useState} from "react";
+import type {CSSProperties, ReactNode} from "react";
+import {fetchErrandById} from "../api/errandsApi";
+import {EditErrandForm} from "./EditErrandForm";
+import type {ErrandDetails} from "../types/errands";
+import {AddPurchaseForm} from "./AddPurchaseForm";
 
 type ErrandDetailsModalProps = {
     errandId: number;
@@ -220,7 +220,7 @@ export const ErrandDetailsModal = ({
                 className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white shadow-2xl outline-none"
                 onClick={(event) => event.stopPropagation()}
             >
-                <div className="h-2 rounded-t-3xl" style={priorityUi.accentStyle} />
+                <div className="h-2 rounded-t-3xl" style={priorityUi.accentStyle}/>
 
                 <div className="p-6 sm:p-8">
                     <div className="mb-6 flex items-start justify-between gap-4">
@@ -267,13 +267,14 @@ export const ErrandDetailsModal = ({
                         />
                     ) : (
                         <div className="space-y-6">
-                            <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 md:grid-cols-2 lg:grid-cols-4">
-                                <Field label="Datum" value={formatDate(data.createdAt)} />
+                            <div
+                                className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 md:grid-cols-2 lg:grid-cols-4">
+                                <Field label="Datum" value={formatDate(data.createdAt)}/>
                                 <Field
                                     label="Ärende ID"
                                     value={String(data.errandId).padStart(3, "0")}
                                 />
-                                <Field label="Status" value={safe(data.status?.name)} />
+                                <Field label="Status" value={safe(data.status?.name)}/>
                                 <div className="space-y-1">
                                     <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                                         Prioritet
@@ -308,8 +309,8 @@ export const ErrandDetailsModal = ({
                                                 value={safe(data.customer?.name)}
                                                 valueStyle={priorityUi.valueStyle}
                                             />
-                                            <Field label="Namn" value={safe(contactName)} />
-                                            <Field label="Telefonnummer" value={safe(phone)} />
+                                            <Field label="Namn" value={safe(contactName)}/>
+                                            <Field label="Telefonnummer" value={safe(phone)}/>
                                             <Field
                                                 label="E-post"
                                                 value={
@@ -355,7 +356,8 @@ export const ErrandDetailsModal = ({
                                                         >
                                                             <div className="flex items-start justify-between gap-3">
                                                                 <div className="min-w-0">
-                                                                    <div className="text-sm font-semibold text-slate-900">
+                                                                    <div
+                                                                        className="text-sm font-semibold text-slate-900">
                                                                         {safe(purchase.itemName)}
                                                                     </div>
                                                                     <div className="mt-1 text-xs text-slate-500">
@@ -371,16 +373,19 @@ export const ErrandDetailsModal = ({
                                                                 </span>
                                                             </div>
 
-                                                            <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+                                                            <div
+                                                                className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                                                                 <div>
                                                                     Inköpspris: {formatMoney(purchase.purchasePrice)}
                                                                 </div>
                                                                 <div>
                                                                     Frakt: {formatMoney(purchase.shippingCost)}
                                                                 </div>
-                                                                <div className="font-semibold">Utpris: {formatMoney(purchase.salePrice)}</div>
+                                                                <div
+                                                                    className="font-semibold">Utpris: {formatMoney(purchase.salePrice)}</div>
                                                                 <div>
-                                                                    Total kostnad: {formatMoney(purchase.totalPurchaseCost)}
+                                                                    Total
+                                                                    kostnad: {formatMoney(purchase.totalPurchaseCost)}
                                                                 </div>
                                                             </div>
                                                         </li>
@@ -427,7 +432,7 @@ export const ErrandDetailsModal = ({
                                         </h3>
 
                                         <div className="grid gap-4">
-                                            <Field label="Tidsåtgång" value={formatHours(data.timeSpent)} />
+                                            <Field label="Tidsåtgång" value={formatHours(data.timeSpent)}/>
                                             <Field
                                                 label="Överenskommet pris"
                                                 value={formatMoney(data.agreedPrice)}
@@ -443,13 +448,16 @@ export const ErrandDetailsModal = ({
                                         <div className="flex flex-col gap-3">
                                             <button
                                                 type="button"
-                                                className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                                                onClick={() => setIsAddingPurchase(true)}
+                                                onClick={() => setIsAddingPurchase((current) => !current)}
+                                                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2 text-sm font-semibold text-[#E85D5D] shadow-[0_2px_6px_rgba(15,23,42,0.12)] transition hover:bg-slate-50"
                                             >
-                                                + Lägg till inköp
+                                                <span className="mr-2 text-base leading-none text-slate-700">
+                                                    {isAddingPurchase ? "–" : "+"}
+                                                </span>
+                                                {isAddingPurchase ? "Lägg till inköp" : "Lägg till inköp"}
                                             </button>
 
-                                            {isAddingPurchase && (
+                                            {isAddingPurchase ? (
                                                 <AddPurchaseForm
                                                     errandId={errandId}
                                                     onSaved={async () => {
@@ -458,7 +466,7 @@ export const ErrandDetailsModal = ({
                                                     }}
                                                     onCancel={() => setIsAddingPurchase(false)}
                                                 />
-                                            )}
+                                            ) : null}
 
                                             <button
                                                 type="button"

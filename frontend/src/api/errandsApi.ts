@@ -1,4 +1,7 @@
-import type {ErrandsResponse, ErrandDetails} from "../types/errands";
+import type {
+    ErrandsResponse, ErrandDetails, CreateErrandRequest,
+    CreateErrandResponse,
+} from "../types/errands";
 
 export type UpdateErrandRequest = {
     title: string;
@@ -54,6 +57,25 @@ export const fetchErrands = async (params: {
     }
 
     const res = await fetch(url.toString());
+
+    if (!res.ok) {
+        const body = await res.text();
+        throw new Error(body || `Request failed (${res.status})`);
+    }
+
+    return res.json();
+};
+
+export const createErrand = async (
+    data: CreateErrandRequest,
+): Promise<CreateErrandResponse> => {
+    const res = await fetch("/api/errands", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
 
     if (!res.ok) {
         const body = await res.text();

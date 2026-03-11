@@ -71,6 +71,12 @@ public class Purchase {
         this.salePrice = salePrice;
     }
 
+    public void setErrand(Errand errand) {
+        this.errand = errand;
+    }
+
+
+
     public Long getPurchaseId() {
         return purchaseId;
     }

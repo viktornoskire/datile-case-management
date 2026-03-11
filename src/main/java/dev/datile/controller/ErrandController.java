@@ -8,6 +8,7 @@ import dev.datile.service.ErrandService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import dev.datile.dto.errands.CreateErrandDto;
 
 /* Everything in this class is API routes under /api/errands
  * @GetMapping means: when someone does GET /api/errands -> run this method
@@ -53,5 +54,12 @@ public class ErrandController {
             @Valid @RequestBody AddHistoryEntryDto request
     ) {
         return ResponseEntity.ok(service.addHistoryEntry(id, request));
+    }
+
+    @PostMapping
+    public ResponseEntity<ErrandDetailsDto> createErrand(
+            @Valid @RequestBody CreateErrandDto request
+    ) {
+        return ResponseEntity.ok(service.create(request));
     }
 }

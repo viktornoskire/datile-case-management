@@ -208,7 +208,7 @@ export const AddPurchaseForm = ({
                         type="button"
                         disabled={loading}
                         onClick={handleSave}
-                        className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {loading ? "Sparar..." : "Spara inköp"}
                     </button>

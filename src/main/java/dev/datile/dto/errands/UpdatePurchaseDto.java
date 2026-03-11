@@ -7,24 +7,11 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-public class UpdatePurchaseDto {
-
-    @NotBlank
-    public String itemName;
-
-    @NotNull
-    @Min(1)
-    public Integer quantity;
-
-    @NotNull
-    @DecimalMin("0.00")
-    public BigDecimal purchasePrice;
-
-    @NotNull
-    @DecimalMin("0.00")
-    public BigDecimal shippingCost;
-
-    @NotNull
-    @DecimalMin("0.00")
-    public BigDecimal salePrice;
+public record UpdatePurchaseDto(
+        @NotBlank String itemName,
+        @NotNull @Min(1) Integer quantity,
+        @NotNull @DecimalMin("0.00") BigDecimal purchasePrice,
+        @NotNull @DecimalMin("0.00") BigDecimal shippingCost,
+        @NotNull @DecimalMin("0.00") BigDecimal salePrice
+) {
 }

@@ -7,6 +7,7 @@ export type PriorityOption = {
     priorityId: number;
     name: string;
     color: string;
+    isDefault: boolean;
 };
 
 export type AssigneeOption = {
@@ -21,6 +22,7 @@ export type CustomerOption = {
 
 export type ContactOption = {
     contactId: number;
+    customerId: number;
     firstName: string;
     lastName: string;
     phoneNumber: string;
