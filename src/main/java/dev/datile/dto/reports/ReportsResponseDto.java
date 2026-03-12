@@ -8,5 +8,4 @@ public record ReportsResponseDto(
         int size,
         long totalElements,
         int totalPages
-) {
-}
+) {}

@@ -1,14 +1,14 @@
 package dev.datile.controller;
 
+import dev.datile.dto.reports.ReportFilterRequestDto;
 import dev.datile.dto.reports.ReportsResponseDto;
-import dev.datile.service.ReportService;
-import org.springframework.format.annotation.DateTimeFormat;
+import dev.datile.service.ReportQueryService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,16 +16,16 @@ import java.util.List;
 @RequestMapping("/api/reports")
 public class ReportController {
 
-    private final ReportService reportService;
+    private final ReportQueryService reportService;
 
-    public ReportController(ReportService reportService) {
+    public ReportController(ReportQueryService reportService) {
         this.reportService = reportService;
     }
 
     @GetMapping
     public ReportsResponseDto getReports(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant dateTo,
+            @RequestParam(required = false) LocalDate dateFrom,
+            @RequestParam(required = false) LocalDate dateTo,
             @RequestParam(required = false) Long customerId,
             @RequestParam(required = false) Long assigneeId,
             @RequestParam(required = false) String statusIds,
@@ -34,7 +34,7 @@ public class ReportController {
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size
     ) {
-        return reportService.getReports(
+        ReportFilterRequestDto request = new ReportFilterRequestDto(
                 dateFrom,
                 dateTo,
                 customerId,
@@ -45,6 +45,8 @@ public class ReportController {
                 page,
                 size
         );
+
+        return reportService.getReports(request);
     }
 
     private List<Long> parseIds(String raw) {

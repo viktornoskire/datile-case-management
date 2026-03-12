@@ -9,6 +9,7 @@ import dev.datile.dto.errands.PriorityDto;
 import dev.datile.dto.errands.StatusDto;
 import dev.datile.dto.reports.ReportListItemDto;
 import dev.datile.dto.reports.ReportPurchaseDto;
+import dev.datile.dto.reports.ReportRowDto;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -38,6 +39,46 @@ public class ReportMapper {
                 toAssigneeDto(errand),
                 purchaseDtos,
                 totalOutprice
+        );
+    }
+
+    public ReportRowDto toReportRowDto(Errand errand, List<Purchase> purchases) {
+        BigDecimal purchaseTotal = purchases.stream()
+                .map(Purchase::getTotalSaleValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        String customerName = errand.getCustomer() != null
+                ? errand.getCustomer().getName()
+                : "";
+
+        String contactName = errand.getContact() != null
+                ? (errand.getContact().getFirstName() + " " + errand.getContact().getLastName()).trim()
+                : "";
+
+        String assigneeName = errand.getAssignee() != null
+                ? errand.getAssignee().getName()
+                : "";
+
+        String status = errand.getStatus() != null
+                ? errand.getStatus().getName()
+                : "";
+
+        String priority = errand.getPriority() != null
+                ? errand.getPriority().getName()
+                : "";
+
+        return new ReportRowDto(
+                errand.getErrandId(),
+                errand.getCreatedAt(),
+                errand.getTitle(),
+                customerName,
+                contactName,
+                assigneeName,
+                status,
+                priority,
+                errand.getTimeSpent(),
+                errand.getAgreedPrice(),
+                purchaseTotal
         );
     }
 

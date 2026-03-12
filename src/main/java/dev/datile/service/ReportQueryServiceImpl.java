@@ -2,7 +2,9 @@ package dev.datile.service;
 
 import dev.datile.domain.Errand;
 import dev.datile.domain.Purchase;
+import dev.datile.dto.reports.ReportFilterRequestDto;
 import dev.datile.dto.reports.ReportListItemDto;
+import dev.datile.dto.reports.ReportRowDto;
 import dev.datile.dto.reports.ReportsResponseDto;
 import dev.datile.mapper.ReportMapper;
 import dev.datile.repository.ErrandRepository;
@@ -24,7 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class ReportService {
+public class ReportQueryServiceImpl implements ReportQueryService {
 
     private static final Set<String> ALLOWED_SORTS = Set.of(
             "customer",
@@ -40,7 +42,7 @@ public class ReportService {
     private final PurchaseRepository purchaseRepository;
     private final ReportMapper reportMapper;
 
-    public ReportService(
+    public ReportQueryServiceImpl(
             ErrandRepository errandRepository,
             PurchaseRepository purchaseRepository,
             ReportMapper reportMapper
@@ -50,34 +52,19 @@ public class ReportService {
         this.reportMapper = reportMapper;
     }
 
-    public ReportsResponseDto getReports(
-            Instant dateFrom,
-            Instant dateTo,
-            Long customerId,
-            Long assigneeId,
-            List<Long> statusIds,
-            List<Long> priorityIds,
-            String sortBy,
-            int page,
-            int size
-    ) {
-        Instant effectiveFrom = dateFrom != null
-                ? dateFrom
-                : LocalDate.now().minusDays(30).atStartOfDay().toInstant(ZoneOffset.UTC);
-
-        Instant effectiveTo = dateTo != null
-                ? dateTo
-                : LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1).toInstant(ZoneOffset.UTC);
+    @Override
+    public ReportsResponseDto getReports(ReportFilterRequestDto request) {
+        Instant effectiveFrom = resolveFromDate(request.dateFrom());
+        Instant effectiveTo = resolveToDate(request.dateTo());
 
         if (effectiveFrom.isAfter(effectiveTo)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dateFrom must be before or equal to dateTo");
         }
 
-        String effectiveSort = (sortBy == null || sortBy.isBlank()) ? "customer" : sortBy;
+        String effectiveSort = resolveSort(request.sortBy());
 
-        if (!ALLOWED_SORTS.contains(effectiveSort)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sortBy value");
-        }
+        int page = request.page() != null ? request.page() : 0;
+        int size = request.size() != null ? request.size() : 20;
 
         if (page < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page must be 0 or greater");
@@ -87,29 +74,12 @@ public class ReportService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "size must be greater than 0");
         }
 
-        Specification<Errand> specification = Specification
-                .where(createdAtBetween(effectiveFrom, effectiveTo))
-                .and(customerEquals(customerId))
-                .and(assigneeEquals(assigneeId))
-                .and(statusIn(statusIds))
-                .and(priorityIn(priorityIds));
+        Specification<Errand> specification = buildSpecification(effectiveFrom, effectiveTo, request);
 
         PageRequest pageRequest = PageRequest.of(page, size, buildSort(effectiveSort));
         Page<Errand> resultPage = errandRepository.findAll(specification, pageRequest);
 
-        List<Long> errandIds = resultPage.getContent().stream()
-                .map(Errand::getErrandId)
-                .toList();
-
-        Map<Long, List<Purchase>> purchasesByErrandId = purchaseRepository.findByErrand_ErrandIdIn(errandIds).stream()
-                .collect(Collectors.groupingBy(purchase -> purchase.getErrand().getErrandId()));
-
-        List<ReportListItemDto> reports = resultPage.getContent().stream()
-                .map(errand -> reportMapper.toReportListItemDto(
-                        errand,
-                        purchasesByErrandId.getOrDefault(errand.getErrandId(), List.of())
-                ))
-                .toList();
+        List<ReportListItemDto> reports = mapToListItems(resultPage.getContent());
 
         return new ReportsResponseDto(
                 reports,
@@ -118,6 +88,91 @@ public class ReportService {
                 resultPage.getTotalElements(),
                 resultPage.getTotalPages()
         );
+    }
+
+    @Override
+    public List<ReportRowDto> getReportRowsForExport(ReportFilterRequestDto request) {
+        Instant effectiveFrom = resolveFromDate(request.dateFrom());
+        Instant effectiveTo = resolveToDate(request.dateTo());
+
+        if (effectiveFrom.isAfter(effectiveTo)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dateFrom must be before or equal to dateTo");
+        }
+
+        String effectiveSort = resolveSort(request.sortBy());
+
+        Specification<Errand> specification = buildSpecification(effectiveFrom, effectiveTo, request);
+
+        List<Errand> errands = errandRepository.findAll(specification, buildSort(effectiveSort));
+
+        return mapToRows(errands);
+    }
+
+    private Instant resolveFromDate(LocalDate dateFrom) {
+        return dateFrom != null
+                ? dateFrom.atStartOfDay().toInstant(ZoneOffset.UTC)
+                : LocalDate.now().minusDays(30).atStartOfDay().toInstant(ZoneOffset.UTC);
+    }
+
+    private Instant resolveToDate(LocalDate dateTo) {
+        return dateTo != null
+                ? dateTo.plusDays(1).atStartOfDay().minusNanos(1).toInstant(ZoneOffset.UTC)
+                : LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1).toInstant(ZoneOffset.UTC);
+    }
+
+    private String resolveSort(String sortBy) {
+        String effectiveSort = (sortBy == null || sortBy.isBlank()) ? "customer" : sortBy;
+
+        if (!ALLOWED_SORTS.contains(effectiveSort)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sortBy value");
+        }
+
+        return effectiveSort;
+    }
+
+    private Specification<Errand> buildSpecification(
+            Instant effectiveFrom,
+            Instant effectiveTo,
+            ReportFilterRequestDto request
+    ) {
+        return Specification
+                .where(createdAtBetween(effectiveFrom, effectiveTo))
+                .and(customerEquals(request.customerId()))
+                .and(assigneeEquals(request.assigneeId()))
+                .and(statusIn(request.statusIds()))
+                .and(priorityIn(request.priorityIds()));
+    }
+
+    private List<ReportListItemDto> mapToListItems(List<Errand> errands) {
+        List<Long> errandIds = errands.stream()
+                .map(Errand::getErrandId)
+                .toList();
+
+        Map<Long, List<Purchase>> purchasesByErrandId = purchaseRepository.findByErrand_ErrandIdIn(errandIds).stream()
+                .collect(Collectors.groupingBy(purchase -> purchase.getErrand().getErrandId()));
+
+        return errands.stream()
+                .map(errand -> reportMapper.toReportListItemDto(
+                        errand,
+                        purchasesByErrandId.getOrDefault(errand.getErrandId(), List.of())
+                ))
+                .toList();
+    }
+
+    private List<ReportRowDto> mapToRows(List<Errand> errands) {
+        List<Long> errandIds = errands.stream()
+                .map(Errand::getErrandId)
+                .toList();
+
+        Map<Long, List<Purchase>> purchasesByErrandId = purchaseRepository.findByErrand_ErrandIdIn(errandIds).stream()
+                .collect(Collectors.groupingBy(purchase -> purchase.getErrand().getErrandId()));
+
+        return errands.stream()
+                .map(errand -> reportMapper.toReportRowDto(
+                        errand,
+                        purchasesByErrandId.getOrDefault(errand.getErrandId(), List.of())
+                ))
+                .toList();
     }
 
     private Sort buildSort(String sortBy) {
