@@ -151,11 +151,11 @@ export default function Errands() {
 
     return (
         <div className="min-h-screen bg-stone-100">
-            <div className="mx-auto max-w-7xl px-4 pb-8 pt-20 sm:px-6 sm:pb-10 sm:pt-24">
-                <div className="mb-5 rounded-[28px] border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur sm:mb-6 sm:p-6">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="space-y-1">
-                            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            <div className="mx-auto max-w-7xl px-4 pb-8 pt-14 sm:px-6 sm:pb-10 sm:pt-10">
+                <div className="mb-4 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm backdrop-blur sm:mb-5 sm:p-4">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="space-y-0.5">
+                            <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
                                 Ärenden
                             </h1>
                             <p className="text-sm text-slate-500">
