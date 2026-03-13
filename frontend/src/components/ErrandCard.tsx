@@ -25,9 +25,11 @@ const safe = (value?: string | null) =>
 export const ErrandCard = ({
                                errand,
                                onOpen,
+                               onEdit,
                            }: {
     errand: ErrandListItem;
     onOpen: (errandId: number) => void;
+    onEdit: (errandId: number) => void;
 }) => {
     const prio = getPriorityStyles(errand.priority);
     const {name: priorityName, color, valueStyle, badgeStyle} = prio;
@@ -192,13 +194,13 @@ export const ErrandCard = ({
                 <div className="mt-auto flex justify-end">
                     <button
                         type="button"
-                        className="rounded-full border border-white/40 bg-[#9BD3BC] px-5 py-0.5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(0,0,0,0.12) hover:bg-[#8BC9AF] hover:shadow-[0_6px_16px_rgba(0,0,0,0.16)]"
+                        className="rounded-full border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
                         onClick={(event) => {
                             event.stopPropagation();
-                            onOpen(errand.errandId);
+                            onEdit(errand.errandId);
                         }}
                     >
-                        Visa mer
+                        Redigera
                     </button>
                 </div>
             </div>

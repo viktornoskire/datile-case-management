@@ -25,9 +25,11 @@ const safe = (value?: string | null) =>
 export const ErrandListRow = ({
                                   errand,
                                   onOpen,
+                                  onEdit,
                               }: {
     errand: ErrandListItem;
     onOpen: (errandId: number) => void;
+    onEdit: (errandId: number) => void;
 }) => {
     const { name: priorityName, accentStyle, badgeStyle } = getPriorityStyles(errand.priority);
 
@@ -145,13 +147,13 @@ export const ErrandListRow = ({
 
                         <button
                             type="button"
-                            className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                            className="rounded-full border border-slate-300 bg-white px-1.5 py-0.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
                             onClick={(event) => {
                                 event.stopPropagation();
-                                onOpen(errand.errandId);
+                                onEdit(errand.errandId);
                             }}
                         >
-                            Visa
+                            Redigera
                         </button>
                     </div>
                 </div>

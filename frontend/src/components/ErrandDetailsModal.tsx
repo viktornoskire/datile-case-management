@@ -7,6 +7,7 @@ import {AddPurchaseForm} from "./AddPurchaseForm";
 
 type ErrandDetailsModalProps = {
     errandId: number;
+    mode: "view" | "edit";
     onClose: () => void;
     onErrandUpdated: (updatedErrand: ErrandDetails) => void;
 };
@@ -125,23 +126,27 @@ const Field = ({
 
 export const ErrandDetailsModal = ({
                                        errandId,
+                                       mode,
                                        onClose,
                                        onErrandUpdated,
                                    }: ErrandDetailsModalProps) => {
     const [data, setData] = useState<ErrandDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditing, setIsEditing] = useState(mode === "edit");
     const [isAddingPurchase, setIsAddingPurchase] = useState(false);
 
     const dialogRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        setIsEditing(mode === "edit");
+    }, [mode, errandId]);
 
     useEffect(() => {
         let alive = true;
 
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
-        setIsEditing(false);
         setIsAddingPurchase(false);
 
         const handleKeyDown = (event: KeyboardEvent) => {
