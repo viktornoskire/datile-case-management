@@ -37,13 +37,13 @@ export default function Header() {
                     <NavLink to={"/purchases"} className={navLinkClass} onClick={toggleModal}>INKÖP</NavLink>
                     <NavLink to={"/users"} className={navLinkClass} onClick={toggleModal}>ANVÄNDARE</NavLink>
                     <NavLink to={"/settings"} className={navLinkClass} onClick={toggleModal}>INSTÄLLNINGAR</NavLink>
-                    <NavLink to={"/logout"} className={`flex items-center justify-center py-1 mt-6 sm:mt-0 sm:ml-2 lg:px-8 md:px-4 sm:px-2 bg-[#99D0B6] rounded-xl sm:rounded-full drop-shadow-md transition hover:scale-98 hover:bg-[#88BFA5] active:scale-95`} onClick={toggleModal}>LOGGA UT</NavLink>
+                    <button className={`flex items-center justify-center py-1 mt-6 sm:mt-0 sm:ml-2 lg:px-8 md:px-4 sm:px-2 bg-[#99D0B6] rounded-xl sm:rounded-full drop-shadow-md transition hover:scale-98 hover:bg-[#88BFA5] active:scale-95 w-full sm:w-auto`}>LOGGA UT</button>
                 </nav>
             </header>
 
             <div className="fixed bottom-0 right-0 sm:hidden w-full h-15 bg-[#001A31]">
                 <NavLink to={"/errands"} className="absolute left-4 top-4">
-                    <img alt={"datile-logo"} src={"/datile-mobile-logo.png"} height={50} width={100} />
+                    <img alt={"datile-logo"} src={"/DatileLogoMobile.png"} height={50} width={100} />
                 </NavLink>
 
                 <img
