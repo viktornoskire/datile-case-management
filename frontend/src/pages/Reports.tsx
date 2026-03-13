@@ -25,6 +25,7 @@ export default function Reports() {
     const [data, setData] = useState<ReportsResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
     const [customerOptions, setCustomerOptions] = useState<FilterOption[]>([]);
     const [assigneeOptions, setAssigneeOptions] = useState<FilterOption[]>([]);
@@ -115,8 +116,23 @@ export default function Reports() {
         };
     }, [filters]);
 
+    const toggleExpandedRow = (errandId: number) => {
+        setExpandedRows((current) => {
+            const next = new Set(current);
+
+            if (next.has(errandId)) {
+                next.delete(errandId);
+            } else {
+                next.add(errandId);
+            }
+
+            return next;
+        });
+    };
+
     const handleClear = () => {
         setFilters(createInitialReportFilters());
+        setExpandedRows(new Set());
     };
 
     return (
@@ -171,7 +187,9 @@ export default function Reports() {
                             </div>
                         ) : (
                             <>
-                                <div className="hidden rounded-t-2xl border border-slate-200 border-b-0 bg-slate-100 px-5 py-3 sm:grid sm:grid-cols-[80px_minmax(0,1.6fr)_160px_130px_130px_90px_110px_130px] sm:gap-3">
+                                <div className="hidden rounded-t-2xl border border-slate-200 border-b-0 bg-slate-100 px-5 py-3 sm:grid sm:grid-cols-[56px_80px_minmax(0,1.6fr)_160px_130px_130px_90px_110px_130px] sm:gap-3">
+                                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                    </div>
                                     <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                                         ID
                                     </div>
@@ -200,7 +218,12 @@ export default function Reports() {
 
                                 <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:rounded-t-none">
                                     {data.reports.map((report) => (
-                                        <ReportListRow key={report.errandId} report={report} />
+                                        <ReportListRow
+                                            key={report.errandId}
+                                            report={report}
+                                            isExpanded={expandedRows.has(report.errandId)}
+                                            onToggleExpand={toggleExpandedRow}
+                                        />
                                     ))}
                                 </div>
 

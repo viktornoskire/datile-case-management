@@ -4,10 +4,8 @@ import java.math.BigDecimal;
 
 public record ReportPurchaseDto(
         Long purchaseId,
-        String purchase,
+        String itemName,
         Integer quantity,
-        BigDecimal price,
-        BigDecimal shipping,
-        BigDecimal outprice
+        BigDecimal salePrice
 ) {
 }

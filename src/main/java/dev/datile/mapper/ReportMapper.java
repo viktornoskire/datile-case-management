@@ -87,8 +87,6 @@ public class ReportMapper {
                 purchase.getPurchaseId(),
                 purchase.getItemName(),
                 purchase.getQuantity(),
-                purchase.getPurchasePrice(),
-                purchase.getShippingCost(),
                 purchase.getSalePrice()
         );
     }
