@@ -41,6 +41,18 @@ public class UserController {
 
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody NewUserDto user) {
+
+        try {
+            User updated = userService.updateUser(id, user);
+            return ResponseEntity.ok(Map.of("user", updated));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/password")
     public Map<String, String> getPassword() {
         PasswordGenerator gen = new PasswordGenerator();

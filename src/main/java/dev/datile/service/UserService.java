@@ -37,4 +37,21 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public User updateUser(Long id, NewUserDto user) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // prevent duplicate emails
+        User emailOwner = userRepository.findByEmail(user.email()).orElse(null);
+        if (emailOwner != null && !emailOwner.getId().equals(id)) {
+            throw new RuntimeException("Email already in use");
+        }
+
+        existingUser.setName(user.name());
+        existingUser.setEmail(user.email());
+        existingUser.setRole(user.role());
+
+        return userRepository.save(existingUser);
+    }
+
 }

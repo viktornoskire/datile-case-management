@@ -14,15 +14,16 @@ type User = {
     role: Role;
 }
 
-export default function NewUserForm({
-                                        setDrawerOpen,
-                                    }: {
+type Props = {
     setDrawerOpen: (open: boolean) => void;
-}) {
+    user?: User | null;
+};
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [selectedRole, setSelectedRole] = useState<Role>("USER");
+export default function NewUserForm({ setDrawerOpen, user }: Props) {
+
+    const [name, setName] = useState(user?.name ?? "");
+    const [email, setEmail] = useState(user?.email ?? "");
+    const [selectedRole, setSelectedRole] = useState<Role>(user?.role ?? "USER");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -43,12 +44,20 @@ export default function NewUserForm({
         setError(null);
 
         try {
-            await apiClient.post<User>("/api/users", {
-                name: name.trim().toLowerCase().replace(/\s+/g, ""),
-                email: email.trim().toLowerCase().replace(/\s+/g, ""),
-                role: selectedRole,
-                password: password.trim(),
-            });
+            if (user) {
+                await apiClient.put(`/api/users/${user.id}`, {
+                    name: name.trim().toLowerCase().replace(/\s+/g, ""),
+                    email: email.trim().toLowerCase().replace(/\s+/g, ""),
+                    role: selectedRole,
+                });
+            } else {
+                await apiClient.post<User>("/api/users", {
+                    name: name.trim().toLowerCase().replace(/\s+/g, ""),
+                    email: email.trim().toLowerCase().replace(/\s+/g, ""),
+                    role: selectedRole,
+                    password: password.trim(),
+                });
+            }
 
             setDrawerOpen(false);
 
@@ -69,7 +78,7 @@ export default function NewUserForm({
             {/* HEADER */}
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold">
-                    Ny användare
+                    {user ? "Redigera användare" : "Ny användare"}
                 </h2>
 
                 <button
@@ -100,6 +109,7 @@ export default function NewUserForm({
                     </label>
                     <input
                         type="text"
+                        value={name}
                         className="mt-1 w-full rounded-full border border-[#d2d2d2] px-3 py-2 text-sm"
                         onChange={(e) => {
                             setError(null);
@@ -115,6 +125,7 @@ export default function NewUserForm({
                     </label>
                     <input
                         type="email"
+                        value={email}
                         className="mt-1 w-full rounded-full border border-[#d2d2d2] px-3 py-2 text-sm"
                         onChange={(e) => {
                             setError(null);

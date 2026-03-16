@@ -25,6 +25,7 @@ const rolePermissions: Record<Role, Permissions> = {
 export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
     const Check = ({ value }: { value: boolean }) => (
         <span
             className={`text-2xl font-bold ${
@@ -76,7 +77,10 @@ export default function Users() {
                     </div>
 
                     <button
-                        onClick={() => setDrawerOpen(true)}
+                        onClick={() => {
+                            setEditingUser(null);
+                            setDrawerOpen(true);
+                        }}
                         className="rounded-full bg-[#0A1633] px-6 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
                     >
                         Ny användare
@@ -130,7 +134,13 @@ export default function Users() {
                                         <Check value={permissions.settings} />
 
                                         <div className="text-right">
-                                            <button className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100">
+                                            <button
+                                                onClick={() => {
+                                                    setEditingUser(user);
+                                                    setDrawerOpen(true);
+                                                }}
+                                                className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
+                                            >
                                                 Redigera
                                             </button>
                                         </div>
@@ -271,7 +281,10 @@ export default function Users() {
                     />
 
                     {/* DRAWER */}
-                    <NewUserForm setDrawerOpen={setDrawerOpen}/>
+                    <NewUserForm
+                        setDrawerOpen={setDrawerOpen}
+                        user={editingUser}
+                    />
                 </div>
             )}
 
