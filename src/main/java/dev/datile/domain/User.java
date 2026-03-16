@@ -22,7 +22,7 @@ public class User {
         this.role = role;
     }
 
-    protected User() {
+    public User() {
 
     }
 
@@ -38,7 +38,7 @@ public class User {
         return name;
     }
 
-    public void setName(String username) {
+    public void setName(String name) {
         this.name = name;
     }
 

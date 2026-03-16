@@ -59,8 +59,13 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody NewUserDto user) {
-        User u = userService.saveUser(user);
 
-        return ResponseEntity.ok(Map.of("User", u));
+        try {
+            User u = userService.saveUser(user);
+            return ResponseEntity.ok(Map.of("User", u));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+
     }
 }

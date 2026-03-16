@@ -30,12 +30,12 @@ public class AuthController {
     public AuthResponse login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.username,
-                        loginRequest.password
+                        loginRequest.email(),
+                        loginRequest.password()
                 )
         );
 
-        String token = jwtService.generateToken(loginRequest.username);
+        String token = jwtService.generateToken(loginRequest.email());
 
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);

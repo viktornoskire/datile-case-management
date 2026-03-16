@@ -14,11 +14,6 @@ export default function Login() {
     const navigate = useNavigate();
     const { refreshAuth } = useAuth();
 
-    const [rememberMe, setRememberMe] = useState(false);
-    const toggleRemember = () => {
-        setRememberMe(!rememberMe);
-    }
-
     const [error, setError] = useState<boolean>(false);
     const toggleError = () => {
         setError(!error);
@@ -29,11 +24,11 @@ export default function Login() {
 
         const formData = new FormData(e.currentTarget);
 
-        const username = formData.get("username") as string;
+        const email = formData.get("email") as string;
         const password = formData.get("password") as string;
 
         try {
-            await apiClient.post("/api/auth/login", { username, password });
+            await apiClient.post("/api/auth/login", { email, password });
 
             // Ask backend who the user is (uses the cookie)
             await refreshAuth();
@@ -55,12 +50,10 @@ export default function Login() {
             }}  className={`flex flex-col gap-4 bg-[#FFFFFF] border border-[#D9D9D9] mt-6 p-8 sm:w-[50vw] md:w-[40vw] lg:w-[30vw] rounded-xl sm:rounded-3xl shadow-md`}>
                 <p className={`text-red-600 font-bold font-poppins text-xs transition ${error ? "" : "hidden"}`}>Fel e-postadress eller lösenord</p>
                 <label className={`font-poppins font-bold -mb-2`}>E-postadress</label>
-                <input name="username" placeholder="mail@gmail.com" type={`email`} required className={`border border-[#D9D9D9] rounded-md p-2 outline-0`}/>
+                <input name="email" placeholder="mail@gmail.com" type={`email`} required className={`border border-[#D9D9D9] rounded-md p-2 outline-0`}/>
                 <label className={`font-bold font-poppins -mb-2 mt-4`}>Lösenord</label>
                 <input name="password" type="password" required className={`border border-[#D9D9D9] font-semibold rounded-md p-2 outline-none`} />
                 <button type="submit" className={`bg-[#001A31] text-[#F7F7F7] font-semibold font-poppins rounded-md text-sm py-2 hover:bg-[#001A3F] hover:scale-99 transition active:scale-95`}>Logga in</button>
-                <p className={`underline text-sm cursor-pointer`} onClick={toggleRemember}>Har du glömt lösenordet?</p>
-                <h1 className={`text-3xl font-mono ${rememberMe ? "block" : "hidden"}`}>Synd!</h1>
             </form>
         </div>
         </>
