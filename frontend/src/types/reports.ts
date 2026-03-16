@@ -89,15 +89,20 @@ export const reportSortOptions: Array<{ value: ReportSortBy; label: string }> = 
     { value: "assignee", label: "Ansvarig" },
 ];
 
-const toDateInputValue = (date: Date) => date.toISOString().split("T")[0];
+const toDateInputValue = (date: Date) => {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, "0");
+    const day = `${date.getDate()}`.padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+};
 
 export const createInitialReportFilters = (): ReportFilters => {
     const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 30);
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
     return {
-        dateFrom: toDateInputValue(thirtyDaysAgo),
+        dateFrom: toDateInputValue(firstDayOfMonth),
         dateTo: toDateInputValue(today),
         statusIds: [],
         priorityIds: [],

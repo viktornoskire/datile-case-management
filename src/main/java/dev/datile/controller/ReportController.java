@@ -3,10 +3,12 @@ package dev.datile.controller;
 import dev.datile.dto.reports.ReportFilterRequestDto;
 import dev.datile.dto.reports.ReportsResponseDto;
 import dev.datile.service.ReportQueryService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -16,10 +18,10 @@ import java.util.List;
 @RequestMapping("/api/reports")
 public class ReportController {
 
-    private final ReportQueryService reportService;
+    private final ReportQueryService reportQueryService;
 
-    public ReportController(ReportQueryService reportService) {
-        this.reportService = reportService;
+    public ReportController(ReportQueryService reportQueryService) {
+        this.reportQueryService = reportQueryService;
     }
 
     @GetMapping
@@ -46,7 +48,7 @@ public class ReportController {
                 size
         );
 
-        return reportService.getReports(request);
+        return reportQueryService.getReports(request);
     }
 
     private List<Long> parseIds(String raw) {
@@ -54,10 +56,17 @@ public class ReportController {
             return List.of();
         }
 
-        return Arrays.stream(raw.split(","))
-                .map(String::trim)
-                .filter(value -> !value.isBlank())
-                .map(Long::valueOf)
-                .toList();
+        try {
+            return Arrays.stream(raw.split(","))
+                    .map(String::trim)
+                    .filter(value -> !value.isBlank())
+                    .map(Long::valueOf)
+                    .toList();
+        } catch (NumberFormatException exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid id list: " + raw
+            );
+        }
     }
 }

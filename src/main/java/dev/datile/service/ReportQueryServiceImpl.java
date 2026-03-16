@@ -58,7 +58,10 @@ public class ReportQueryServiceImpl implements ReportQueryService {
         Instant effectiveTo = resolveToDate(request.dateTo());
 
         if (effectiveFrom.isAfter(effectiveTo)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dateFrom must be before or equal to dateTo");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "dateFrom must be before or equal to dateTo"
+            );
         }
 
         String effectiveSort = resolveSort(request.sortBy());
@@ -67,11 +70,17 @@ public class ReportQueryServiceImpl implements ReportQueryService {
         int size = request.size() != null ? request.size() : 20;
 
         if (page < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page must be 0 or greater");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "page must be 0 or greater"
+            );
         }
 
-        if (size <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "size must be greater than 0");
+        if (size <= 0 || size > 100) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "size must be between 1 and 100"
+            );
         }
 
         Specification<Errand> specification = buildSpecification(effectiveFrom, effectiveTo, request);
@@ -96,7 +105,10 @@ public class ReportQueryServiceImpl implements ReportQueryService {
         Instant effectiveTo = resolveToDate(request.dateTo());
 
         if (effectiveFrom.isAfter(effectiveTo)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dateFrom must be before or equal to dateTo");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "dateFrom must be before or equal to dateTo"
+            );
         }
 
         String effectiveSort = resolveSort(request.sortBy());
@@ -111,13 +123,23 @@ public class ReportQueryServiceImpl implements ReportQueryService {
     private Instant resolveFromDate(LocalDate dateFrom) {
         return dateFrom != null
                 ? dateFrom.atStartOfDay().toInstant(ZoneOffset.UTC)
-                : LocalDate.now().minusDays(30).atStartOfDay().toInstant(ZoneOffset.UTC);
+                : LocalDate.now(ZoneOffset.UTC)
+                .withDayOfMonth(1)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC);
     }
 
     private Instant resolveToDate(LocalDate dateTo) {
         return dateTo != null
-                ? dateTo.plusDays(1).atStartOfDay().minusNanos(1).toInstant(ZoneOffset.UTC)
-                : LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1).toInstant(ZoneOffset.UTC);
+                ? dateTo.plusDays(1)
+                .atStartOfDay()
+                .minusNanos(1)
+                .toInstant(ZoneOffset.UTC)
+                : LocalDate.now(ZoneOffset.UTC)
+                .plusDays(1)
+                .atStartOfDay()
+                .minusNanos(1)
+                .toInstant(ZoneOffset.UTC);
     }
 
     private String resolveSort(String sortBy) {
@@ -177,14 +199,21 @@ public class ReportQueryServiceImpl implements ReportQueryService {
 
     private Sort buildSort(String sortBy) {
         return switch (sortBy) {
-            case "customer" -> Sort.by("customer.name").ascending();
+            case "customer" -> Sort.by("customer.name").ascending()
+                    .and(Sort.by("errandId").ascending());
             case "contact" -> Sort.by("contact.lastName").ascending()
-                    .and(Sort.by("contact.firstName").ascending());
-            case "title" -> Sort.by("title").ascending();
-            case "status" -> Sort.by("status.name").ascending();
-            case "priority" -> Sort.by("priority.name").ascending();
-            case "assignee" -> Sort.by("assignee.name").ascending();
-            case "timeSpent" -> Sort.by("timeSpent").ascending();
+                    .and(Sort.by("contact.firstName").ascending())
+                    .and(Sort.by("errandId").ascending());
+            case "title" -> Sort.by("title").ascending()
+                    .and(Sort.by("errandId").ascending());
+            case "status" -> Sort.by("status.name").ascending()
+                    .and(Sort.by("errandId").ascending());
+            case "priority" -> Sort.by("priority.name").ascending()
+                    .and(Sort.by("errandId").ascending());
+            case "assignee" -> Sort.by("assignee.name").ascending()
+                    .and(Sort.by("errandId").ascending());
+            case "timeSpent" -> Sort.by("timeSpent").ascending()
+                    .and(Sort.by("errandId").ascending());
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sortBy value");
         };
     }

@@ -21,17 +21,26 @@ export default function Errands() {
     const [error, setError] = useState<string | null>(null);
     const [view, setView] = useState<"cards" | "list">("cards");
     const [selectedErrandId, setSelectedErrandId] = useState<number | null>(null);
+    const [modalMode, setModalMode] = useState<"view" | "edit">("view");
     const [filters, setFilters] = useState<ErrandFilters>(initialErrandFilters);
     const [debouncedQ, setDebouncedQ] = useState(filters.q);
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
     const navigate = useNavigate();
 
+
     const openModal = (errandId: number) => {
+        setModalMode("view");
+        setSelectedErrandId(errandId);
+    };
+
+    const openEditModal = (errandId: number) => {
+        setModalMode("edit");
         setSelectedErrandId(errandId);
     };
 
     const closeModal = () => {
         setSelectedErrandId(null);
+        setModalMode("view");
     };
 
     const handleErrandUpdated = (updatedErrand: ErrandDetails) => {
@@ -257,7 +266,12 @@ export default function Errands() {
                 ) : view === "cards" ? (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {data.errands.map((e) => (
-                            <ErrandCard key={e.errandId} errand={e} onOpen={openModal} />
+                            <ErrandCard
+                                key={e.errandId}
+                                errand={e}
+                                onOpen={openModal}
+                                onEdit={openEditModal}
+                            />
                         ))}
                     </div>
                 ) : (
@@ -289,7 +303,11 @@ export default function Errands() {
                         <ul className="m-0 list-none space-y-3 p-0">
                             {data.errands.map((e) => (
                                 <li key={e.errandId}>
-                                    <ErrandListRow errand={e} onOpen={openModal} />
+                                    <ErrandListRow
+                                        errand={e}
+                                        onOpen={openModal}
+                                        onEdit={openEditModal}
+                                    />
                                 </li>
                             ))}
                         </ul>
@@ -299,6 +317,7 @@ export default function Errands() {
                 {selectedErrandId !== null && (
                     <ErrandDetailsModal
                         errandId={selectedErrandId}
+                        mode={modalMode}
                         onClose={closeModal}
                         onErrandUpdated={handleErrandUpdated}
                     />
