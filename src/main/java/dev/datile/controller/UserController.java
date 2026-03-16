@@ -24,6 +24,23 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping
+    public List<User> getUsers() {
+        return userService.getAllUsers();
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createUser(@RequestBody NewUserDto user) {
+
+        try {
+            User u = userService.saveUser(user);
+            return ResponseEntity.ok(Map.of("user", u));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Användare finns redan"));
+        }
+
+    }
+
     @GetMapping("/password")
     public Map<String, String> getPassword() {
         PasswordGenerator gen = new PasswordGenerator();
@@ -55,17 +72,5 @@ public class UserController {
                 upperCaseRule, digitRule);
 
         return Map.of("password", password);
-    }
-
-    @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody NewUserDto user) {
-
-        try {
-            User u = userService.saveUser(user);
-            return ResponseEntity.ok(Map.of("User", u));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
-        }
-
     }
 }

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import type { Permissions, Role, User } from "../types/users";
 import { NewUserForm } from "../components";
+import {apiClient} from "../services/apiClient.ts";
 
 const rolePermissions: Record<Role, Permissions> = {
     ADMIN: {
@@ -21,16 +22,8 @@ const rolePermissions: Record<Role, Permissions> = {
     },
 };
 
-const mockUsers: User[] = [
-    { id: 1, name: "Jimmy", email: "jimmy@gmail.com", role: "ADMIN" },
-    { id: 2, name: "Niklas", email: "niklas@gmail.com", role: "USER" },
-    { id: 3, name: "Leo", email: "leo@gmail.com", role: "USER" },
-    { id: 4, name: "Ronja", email: "ronja@gmail.com", role: "USER" },
-    { id: 5, name: "Viktor", email: "viktor@gmail.com", role: "USER" },
-];
-
 export default function Users() {
-    const [users] = useState<User[]>(mockUsers);
+    const [users, setUsers] = useState<User[]>([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const Check = ({ value }: { value: boolean }) => (
         <span
@@ -42,6 +35,14 @@ export default function Users() {
         </span>
     );
 
+    useEffect(() => {
+        async function loadUsers() {
+            const res = await apiClient.get<User[]>("/api/users");
+            setUsers(res)
+        }
+        loadUsers();
+    }, [drawerOpen])
+
     const RoleBadge = ({ role }: { role: Role }) =>
         role === "ADMIN" ? (
             <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
@@ -52,6 +53,10 @@ export default function Users() {
                 User
             </span>
         );
+
+    function capitalizeFirstLetter(str: string) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
 
     return (
         <div className="min-h-screen bg-stone-100 relative">
@@ -103,7 +108,7 @@ export default function Users() {
                                 >
                                     <div>
                                         <div className="flex items-center font-medium text-slate-800">
-                                            {user.name}
+                                            {capitalizeFirstLetter(user.name)}
                                             <RoleBadge role={user.role} />
                                         </div>
                                         <div className="text-sm text-slate-500">
@@ -142,7 +147,7 @@ export default function Users() {
                                 className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
                             >
                                 <div className="flex items-center font-semibold">
-                                    {user.name}
+                                    {capitalizeFirstLetter(user.name)}
                                     <RoleBadge role={user.role} />
                                 </div>
 
@@ -220,7 +225,7 @@ export default function Users() {
                                     className="flex items-center justify-between px-4 py-4 sm:px-6"
                                 >
                                     <span className="font-medium text-slate-800">
-                                        {user.name}
+                                        {capitalizeFirstLetter(user.name)}
                                     </span>
 
                                     <button className="rounded-full border px-3 py-1 text-sm hover:bg-slate-100">

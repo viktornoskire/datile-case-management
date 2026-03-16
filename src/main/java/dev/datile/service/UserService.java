@@ -6,6 +6,8 @@ import dev.datile.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
     UserRepository userRepository;
@@ -29,6 +31,10 @@ public class UserService {
         u.setPassword(passwordEncoder.encode(user.password()));
         u.setRole(user.role());
         return userRepository.save(u);
+    }
+
+    public List<User> getAllUsers(){
+        return userRepository.findAll();
     }
 
 }

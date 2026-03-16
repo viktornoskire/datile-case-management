@@ -25,34 +25,42 @@ export default function NewUserForm({
     const [selectedRole, setSelectedRole] = useState<Role>("USER");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     async function generatePassword() {
         const randomPassword = await apiClient.get<Password>("/api/users/password");
         setPassword(randomPassword.password);
     }
 
-    async function saveUser(e: React.SubmitEvent<HTMLFormElement>) {
+    async function saveUser(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
         if (!password.trim() || !name.trim() || !email.trim()) {
-            setError(true);
+            setError("Ange giltig information...");
+            return;
         }
 
-        setError(false);
+        setError(null);
 
         try {
-            const response = await apiClient.post<User>("/api/users", {
-                name: name,
-                email,
+            await apiClient.post<User>("/api/users", {
+                name: name.trim(),
+                email: email.trim(),
                 role: selectedRole,
-                password,
+                password: password.trim(),
             });
-            console.log(response)
-        } catch (error) {
-            setError(true);
-        }
 
+            setDrawerOpen(false);
+
+        } catch (error: unknown) {
+
+            if (error instanceof Error) {
+                setError("Användare finns redan...");
+            } else {
+                setError("Något gick fel...");
+            }
+
+        }
     }
 
     return (
@@ -85,7 +93,7 @@ export default function NewUserForm({
             >
 
                 {/* NAME */}
-                <p className={`text-red-600 font-semibold font-poppins text-xs ${error ? "" : "hidden"}`} >Ange giltig information</p>
+                <p className={`text-red-600 font-semibold font-poppins text-xs`} >{error}</p>
                 <div>
                     <label className="text-sm text-slate-600">
                         Namn
@@ -93,7 +101,10 @@ export default function NewUserForm({
                     <input
                         type="text"
                         className="mt-1 w-full rounded-full border border-[#d2d2d2] px-3 py-2 text-sm"
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => {
+                            setError(null);
+                            setName(e.target.value)
+                        }}
                     />
                 </div>
 
@@ -105,7 +116,10 @@ export default function NewUserForm({
                     <input
                         type="email"
                         className="mt-1 w-full rounded-full border border-[#d2d2d2] px-3 py-2 text-sm"
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                            setError(null);
+                            setEmail(e.target.value)
+                        }}
                     />
                 </div>
 
@@ -130,7 +144,10 @@ export default function NewUserForm({
                             type={showPassword ? "text" : "password"}
                             className="flex-1 rounded-full border border-[#d2d2d2] px-3 py-2 text-sm"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                                setError(null);
+                                setPassword(e.target.value)
+                            }}
                         />
 
                         <button
