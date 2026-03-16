@@ -44,8 +44,8 @@ export default function NewUserForm({
 
         try {
             await apiClient.post<User>("/api/users", {
-                name: name.trim(),
-                email: email.trim(),
+                name: name.trim().toLowerCase().replace(/\s+/g, ""),
+                email: email.trim().toLowerCase().replace(/\s+/g, ""),
                 role: selectedRole,
                 password: password.trim(),
             });
