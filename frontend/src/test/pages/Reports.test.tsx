@@ -10,6 +10,8 @@ const mockFetchAssignees = vi.fn();
 const mockFetchStatuses = vi.fn();
 const mockFetchPriorities = vi.fn();
 
+// testcommand: npx vitest run src/test/pages/Reports.test.tsx
+
 vi.mock("../../api/reportsApi", () => ({
     fetchReports: (...args: unknown[]) => mockFetchReports(...args),
     exportReportsCsv: (...args: unknown[]) => mockExportReportsCsv(...args),

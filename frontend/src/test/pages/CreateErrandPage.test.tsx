@@ -13,6 +13,8 @@ const mockFetchAssignees = vi.fn();
 const mockFetchCustomers = vi.fn();
 const mockFetchContacts = vi.fn();
 
+// Testcommand: npx vitest run src/test/pages/CreateErrandPage.test.tsx
+
 vi.mock("react-router-dom", () => ({
     useNavigate: () => mockNavigate,
 }));

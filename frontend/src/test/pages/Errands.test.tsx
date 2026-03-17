@@ -7,6 +7,8 @@ const mockFetchErrands = vi.fn();
 const mockNavigate = vi.fn();
 const mockBuildErrandFilterParams = vi.fn();
 
+// Testcommand: npx vitest run src/test/pages/Errands.test.tsx
+
 vi.mock("../../api/errandsApi", () => ({
     fetchErrands: (...args: unknown[]) => mockFetchErrands(...args),
 }));
