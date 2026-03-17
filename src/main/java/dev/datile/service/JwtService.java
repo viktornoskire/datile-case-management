@@ -26,6 +26,19 @@ public class JwtService {
                 .compact();
     }
 
+    public String getRoleFromToken(String token) {
+
+        Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
+
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("role", String.class);
+    }
+
     public String getUsernameFromToken(String token) {
 
         Key key = Keys.hmacShaKeyFor(SECRET.getBytes());

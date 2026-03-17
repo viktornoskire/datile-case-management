@@ -1,11 +1,12 @@
 package dev.datile.controller;
 
+import dev.datile.domain.Assignee;
 import dev.datile.dto.errands.AssigneeDto;
 import dev.datile.repository.AssigneeRepository;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -27,5 +28,56 @@ public class AssigneeController {
                         assignee.getName()
                 ))
                 .toList();
+    }
+
+    @PostMapping
+    public AssigneeDto createAssignee(@RequestBody AssigneeDto dto) {
+        System.out.println("CREATE ASSIGNEE HIT");
+
+        if (assigneeRepository.existsByNameIgnoreCase(dto.name())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Ansvarig finns redan"
+            );
+        }
+
+        var assignee = new Assignee(dto.name());
+
+        var saved = assigneeRepository.save(assignee);
+
+        return new AssigneeDto(
+                saved.getAssigneeId(),
+                saved.getName()
+        );
+    }
+
+    @PutMapping("/{id}")
+    public AssigneeDto updateAssignee(@PathVariable Long id,
+                                      @RequestBody AssigneeDto dto) {
+
+        System.out.println("CREATE ASSIGNEE HIT");
+        var assignee = assigneeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Assignee not found"
+                ));
+
+        if (assigneeRepository.existsByNameIgnoreCase(dto.name())
+                && !assignee.getName().equalsIgnoreCase(dto.name())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Ansvarig finns redan"
+            );
+        }
+
+        assignee.setName(dto.name());
+
+        var saved = assigneeRepository.save(assignee);
+
+        return new AssigneeDto(
+                saved.getAssigneeId(),
+                saved.getName()
+        );
     }
 }

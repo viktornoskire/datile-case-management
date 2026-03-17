@@ -52,7 +52,7 @@ export default function NewUserForm({ setDrawerOpen, user }: Props) {
                 });
             } else {
                 await apiClient.post<User>("/api/users", {
-                    name: name.trim().toLowerCase().replace(/\s+/g, ""),
+                    name: name.trim().toLowerCase(),
                     email: email.trim().toLowerCase().replace(/\s+/g, ""),
                     role: selectedRole,
                     password: password.trim(),

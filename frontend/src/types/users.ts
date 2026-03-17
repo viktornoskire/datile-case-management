@@ -15,3 +15,8 @@ export type User = {
     email: string;
     role: Role;
 };
+
+export type Assignee = {
+    assigneeId: number;
+    name: string;
+};
