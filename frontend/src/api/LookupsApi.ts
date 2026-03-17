@@ -32,16 +32,16 @@ export type ContactLookup = {
 };
 
 export const fetchStatuses = async (): Promise<StatusLookup[]> =>
-    apiClient.get<StatusLookup[]>("/statuses");
+    apiClient.get<StatusLookup[]>("/api/statuses");
 
 export const fetchPriorities = async (): Promise<PriorityLookup[]> =>
-    apiClient.get<PriorityLookup[]>("/priorities");
+    apiClient.get<PriorityLookup[]>("/api/priorities");
 
 export const fetchAssignees = async (): Promise<AssigneeLookup[]> =>
-    apiClient.get<AssigneeLookup[]>("/assignees");
+    apiClient.get<AssigneeLookup[]>("/api/assignees");
 
 export const fetchCustomers = async (): Promise<CustomerLookup[]> =>
-    apiClient.get<CustomerLookup[]>("/customers");
+    apiClient.get<CustomerLookup[]>("/api/customers");
 
 export const fetchContacts = async (): Promise<ContactLookup[]> =>
-    apiClient.get<ContactLookup[]>("/contacts");
+    apiClient.get<ContactLookup[]>("/api/contacts");

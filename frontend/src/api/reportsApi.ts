@@ -36,7 +36,7 @@ export const buildReportParams = (filters: ReportFilters) => {
 };
 
 export const fetchReports = async (filters: ReportFilters) =>
-    apiClient.get<ReportsResponse>("/reports", {
+    apiClient.get<ReportsResponse>("/api/reports", {
         params: buildReportParams(filters),
     });
 
