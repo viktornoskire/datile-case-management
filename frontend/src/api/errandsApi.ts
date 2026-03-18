@@ -1,7 +1,10 @@
 import type {
-    ErrandsResponse, ErrandDetails, CreateErrandRequest,
+    ErrandsResponse,
+    ErrandDetails,
+    CreateErrandRequest,
     CreateErrandResponse,
 } from "../types/errands";
+import {apiClient} from "../services/apiClient.ts";
 
 export type UpdateErrandRequest = {
     title: string;
@@ -27,19 +30,18 @@ export type AddPurchaseRequest = {
     salePrice: number;
 };
 
-export const fetchErrandById = async (id: number): Promise<ErrandDetails> => {
-    const res = await fetch(`/api/errands/${id}`);
-
-    if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Request failed (${res.status})`);
-
-    }
-
-    return res.json();
+export type UpdatePurchaseRequest = {
+    itemName: string;
+    quantity: number;
+    purchasePrice: number;
+    shippingCost: number;
+    salePrice: number;
 };
 
-export const fetchErrands = async (params: {
+export const fetchErrandById = (id: number) =>
+    apiClient.get<ErrandDetails>(`/api/errands/${id}`);
+
+export const fetchErrands = (params: {
     page?: number;
     size?: number;
     sortBy?: string;
@@ -49,7 +51,7 @@ export const fetchErrands = async (params: {
     assigneeId?: string | number;
     customerId?: string | number;
     q?: string;
-}): Promise<ErrandsResponse> => {
+}) => {
     const url = new URL("/api/errands", window.location.origin);
 
     url.searchParams.set("page", String(params.page ?? 0));
@@ -73,133 +75,31 @@ export const fetchErrands = async (params: {
         url.searchParams.set("customerId", String(params.customerId));
     }
 
-    if (params.q && params.q.trim()) {
+    if (params.q?.trim()) {
         url.searchParams.set("q", params.q.trim());
     }
 
-    const res = await fetch(url.toString());
-
-    if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Request failed (${res.status})`);
-    }
-
-    return res.json();
+    return apiClient.get<ErrandsResponse>(url.pathname + url.search);
 };
 
-export const createErrand = async (
-    data: CreateErrandRequest,
-): Promise<CreateErrandResponse> => {
-    const res = await fetch("/api/errands", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-    });
+export const createErrand = (data: CreateErrandRequest) =>
+    apiClient.post<CreateErrandResponse>("/api/errands", data);
 
-    if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Request failed (${res.status})`);
-    }
+export const updateErrand = (id: number, data: UpdateErrandRequest) =>
+    apiClient.put<ErrandDetails>(`/api/errands/${id}`, data);
 
-    return res.json();
-};
-
-export const updateErrand = async (
-    id: number,
-    data: UpdateErrandRequest,
-): Promise<ErrandDetails> => {
-    const res = await fetch(`/api/errands/${id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Request failed (${res.status})`);
-    }
-
-    return res.json();
-};
-
-export const addErrandHistoryEntry = async (
+export const addErrandHistoryEntry = (
     id: number,
     data: AddHistoryEntryRequest,
-): Promise<ErrandDetails> => {
-    const res = await fetch(`/api/errands/${id}/history`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-    });
+) => apiClient.post<ErrandDetails>(`/api/errands/${id}/history`, data);
 
-    if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Request failed (${res.status})`);
-    }
+export const addPurchase = (id: number, data: AddPurchaseRequest) =>
+    apiClient.post(`/api/errands/${id}/purchases`, data);
 
-    return res.json();
-};
-
-export const addPurchase = async (
-    id: number,
-    data: AddPurchaseRequest,
-) => {
-    const res = await fetch(`/api/errands/${id}/purchases`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Request failed (${res.status})`);
-    }
-
-    return res.json();
-};
-export type UpdatePurchaseRequest = {
-    itemName: string;
-    quantity: number;
-    purchasePrice: number;
-    shippingCost: number;
-    salePrice: number;
-};
-
-export const updatePurchase = async (
+export const updatePurchase = (
     purchaseId: number,
     payload: UpdatePurchaseRequest,
-) => {
-    const response = await fetch(`/api/purchases/${purchaseId}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-    });
+) => apiClient.put(`/api/purchases/${purchaseId}`, payload);
 
-    if (!response.ok) {
-        const body = await response.text();
-        throw new Error(body || `Request failed (${response.status})`);
-    }
-
-    return response.json();
-};
-
-export const deletePurchase = async (purchaseId: number): Promise<void> => {
-    const res = await fetch(`/api/purchases/${purchaseId}`, {
-        method: "DELETE",
-    });
-
-    if (!res.ok) {
-        const body = await res.text();
-        throw new Error(body || `Request failed (${res.status})`);
-    }
-};
+export const deletePurchase = (purchaseId: number) =>
+    apiClient.delete(`/api/purchases/${purchaseId}`);

@@ -28,7 +28,7 @@ const parseBody = async (res: Response) => {
     return text.length ? {raw: text} : null;
 };
 
-//Defines what is allowed, GET sends params, all other needs headers
+// Defines what is allowed, GET sends params, all other needs headers
 type GetOptions = {
     params?: Record<string, QueryValue>;
     headers?: HeadersInit;
