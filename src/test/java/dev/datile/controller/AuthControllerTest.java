@@ -74,7 +74,7 @@ public class AuthControllerTest {
     void logout_should_remove_jwt_cookie() throws Exception {
         String body = """
                 {
-                    "username": "user@gmail.com",
+                    "email": "viktor@gmail.com",
                     "password": "password"
                 }
                 """;
@@ -97,7 +97,7 @@ public class AuthControllerTest {
     void logout_should_remove_jwt_cookie_and_return_401_on_errands() throws Exception {
         String body = """
                 {
-                    "username": "user@gmail.com",
+                    "email": "viktor@gmail.com",
                     "password": "password"
                 }
                 """;

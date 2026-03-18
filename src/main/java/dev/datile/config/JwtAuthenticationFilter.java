@@ -42,6 +42,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     String role = jwtService.getRoleFromToken(token);
 
+                    // ✅ critical safety
+                    if (role == null) {
+                        chain.doFilter(request, response);
+                        return;
+                    }
+
                     var authorities = List.of(
                             new SimpleGrantedAuthority("ROLE_" + role)
                     );
@@ -60,9 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
 
-            } catch (Exception e) {
-                // Token invalid or expired → ignore
-                // (user stays unauthenticated)
+            } catch (Exception ignored) {
             }
         }
 
