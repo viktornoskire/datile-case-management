@@ -1,32 +1,49 @@
 package dev.datile.controller;
 
-import dev.datile.dto.errands.CustomerDto;
-import dev.datile.repository.CustomerRepository;
-import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import dev.datile.dto.customers.CreateCustomerRequestDto;
+import dev.datile.dto.customers.CustomerListItemDto;
+import dev.datile.dto.customers.CustomersResponseDto;
+import dev.datile.dto.customers.UpdateCustomerRequestDto;
+import dev.datile.service.CustomerService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
 
-    private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
 
-    public CustomerController(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
     }
 
     @GetMapping
-    public List<CustomerDto> listCustomers() {
-        return customerRepository.findAll(Sort.by("customerId")).stream()
-                .map(customer -> new CustomerDto(
-                        customer.getCustomerId(),
-                        customer.getName(),
-                        customer.getIsActive()
-                ))
-                .toList();
+    public CustomersResponseDto listCustomers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        return customerService.listCustomers(page, size, sortBy, sortDir);
+    }
+
+    @PostMapping
+    public CustomerListItemDto createCustomer(@RequestBody CreateCustomerRequestDto request) {
+        return customerService.createCustomer(request);
+    }
+
+    @PutMapping("/{customerId}")
+    public CustomerListItemDto updateCustomer(
+            @PathVariable Long customerId,
+            @RequestBody UpdateCustomerRequestDto request
+    ) {
+        return customerService.updateCustomer(customerId, request);
+    }
+
+    @DeleteMapping("/{customerId}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long customerId) {
+        customerService.deleteCustomer(customerId);
+        return ResponseEntity.noContent().build();
     }
 }

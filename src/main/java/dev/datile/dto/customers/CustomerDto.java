@@ -1,4 +1,4 @@
-package dev.datile.dto.errands;
+package dev.datile.dto.customers;
 
 public record CustomerDto(
         Long customerId,

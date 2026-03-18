@@ -14,12 +14,19 @@ public class Customer {
     @Column(nullable = false, length = 255)
     private String name;
 
-    protected Customer() {
-    }
+    @Column(name = "customer_number", nullable = false, length = 100, unique = true)
+    private String customerNumber;
+
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
-    public Customer(String name) {
+    protected Customer() {
+    }
+
+    public Customer(String name, String customerNumber, Boolean isActive) {
         this.name = name;
+        this.customerNumber = customerNumber;
+        this.isActive = isActive;
     }
 
     public Long getCustomerId() {
@@ -30,8 +37,20 @@ public class Customer {
         return name;
     }
 
+    public String getCustomerNumber() {
+        return customerNumber;
+    }
 
     public Boolean getIsActive() {
         return isActive;
+    }
+
+    public void update(String name, String customerNumber) {
+        this.name = name;
+        this.customerNumber = customerNumber;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
     }
 }

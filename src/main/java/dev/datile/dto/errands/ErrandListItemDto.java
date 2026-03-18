@@ -1,5 +1,7 @@
 package dev.datile.dto.errands;
 
+import dev.datile.dto.customers.CustomerDto;
+
 import java.time.Instant;
 import java.util.List;
 

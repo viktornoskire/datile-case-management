@@ -6,6 +6,7 @@ import dev.datile.domain.Customer;
 import dev.datile.domain.Errand;
 import dev.datile.domain.Priority;
 import dev.datile.domain.Status;
+import dev.datile.dto.customers.CustomerDto;
 import dev.datile.dto.errands.*;
 import dev.datile.domain.Purchase;
 import org.springframework.stereotype.Component;

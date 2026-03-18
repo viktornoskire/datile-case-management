@@ -17,7 +17,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiErrorDto> handleIllegalArgument(IllegalArgumentException ex) {
         log.debug("Bad request: {}", ex.getMessage());
-        var body = new ApiErrorDto("Bad request", "Invalid filter or sorting parameters");
+
+        var body = new ApiErrorDto(
+                "Bad request",
+                ex.getMessage() != null ? ex.getMessage() : "Invalid request"
+        );
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorDto> handleUnexpected(Exception ex) {
+        log.error("Unexpected server error", ex);
+
+        var body = new ApiErrorDto(
+                "Internal server error",
+                "Something went wrong on the server"
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }
