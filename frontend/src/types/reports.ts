@@ -54,7 +54,7 @@ export type ReportListItem = {
     timeSpent: number | null;
     assignee: ReportAssignee | null;
     purchases: ReportPurchase[];
-    totalOutprice: number;
+    agreedPrice: number;
 };
 
 export type ReportsResponse = {

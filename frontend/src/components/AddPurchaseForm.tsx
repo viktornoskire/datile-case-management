@@ -1,28 +1,68 @@
 import { useEffect, useRef, useState } from "react";
-import { addPurchase } from "../api/errandsApi";
+import { addPurchase, updatePurchase } from "../api/errandsApi";
+import type { ErrandDetails } from "../types/errands";
+
+type PurchaseItem = NonNullable<ErrandDetails["purchases"]>[number];
 
 type AddPurchaseFormProps = {
     errandId: number;
     onSaved: () => Promise<void> | void;
     onCancel: () => void;
+    purchaseToEdit?: PurchaseItem | null;
+};
+
+const formatMoney = (value: number | null) => {
+    if (value === null || Number.isNaN(value)) return "—";
+    return `${value.toFixed(2)} kr`;
 };
 
 export const AddPurchaseForm = ({
                                     errandId,
                                     onSaved,
                                     onCancel,
+                                    purchaseToEdit = null,
                                 }: AddPurchaseFormProps) => {
+    const isEditMode = purchaseToEdit !== null;
+
     const [itemName, setItemName] = useState("");
     const [quantity, setQuantity] = useState("1");
-    const [purchasePrice, setPurchasePrice] = useState("");
+    const [unitPurchasePrice, setUnitPurchasePrice] = useState("");
     const [shippingCost, setShippingCost] = useState("0");
-    const [salePrice, setSalePrice] = useState("");
+    const [unitCustomerPrice, setUnitCustomerPrice] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isHighlighted, setIsHighlighted] = useState(true);
 
     const containerRef = useRef<HTMLElement | null>(null);
     const firstInputRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+        if (purchaseToEdit) {
+            setItemName(purchaseToEdit.itemName ?? "");
+            setQuantity(String(purchaseToEdit.quantity ?? 1));
+            setUnitPurchasePrice(
+                purchaseToEdit.purchasePrice != null
+                    ? String(purchaseToEdit.purchasePrice)
+                    : "",
+            );
+            setShippingCost(
+                purchaseToEdit.shippingCost != null
+                    ? String(purchaseToEdit.shippingCost)
+                    : "0",
+            );
+            setUnitCustomerPrice(
+                purchaseToEdit.salePrice != null
+                    ? String(purchaseToEdit.salePrice)
+                    : "",
+            );
+        } else {
+            setItemName("");
+            setQuantity("1");
+            setUnitPurchasePrice("");
+            setShippingCost("0");
+            setUnitCustomerPrice("");
+        }
+    }, [purchaseToEdit]);
 
     useEffect(() => {
         containerRef.current?.scrollIntoView({
@@ -45,26 +85,41 @@ export const AddPurchaseForm = ({
     }, []);
 
     const parsedQuantity = Number(quantity);
-    const parsedPurchasePrice = Number(purchasePrice);
+    const parsedUnitPurchasePrice = Number(unitPurchasePrice);
     const parsedShippingCost = Number(shippingCost);
-    const parsedSalePrice = Number(salePrice);
+    const parsedUnitCustomerPrice = Number(unitCustomerPrice);
 
-    const totalPurchaseCost =
-        Number.isNaN(parsedQuantity) ||
-        Number.isNaN(parsedPurchasePrice) ||
-        Number.isNaN(parsedShippingCost)
-            ? null
-            : parsedQuantity * parsedPurchasePrice + parsedShippingCost;
+    const isValidQuantity =
+        Number.isInteger(parsedQuantity) && parsedQuantity > 0;
 
-    const totalSaleValue =
-        Number.isNaN(parsedQuantity) || Number.isNaN(parsedSalePrice)
-            ? null
-            : parsedQuantity * parsedSalePrice;
+    const isValidUnitPurchasePrice =
+        !Number.isNaN(parsedUnitPurchasePrice) && parsedUnitPurchasePrice >= 0;
+
+    const isValidShippingCost =
+        !Number.isNaN(parsedShippingCost) && parsedShippingCost >= 0;
+
+    const isValidUnitCustomerPrice =
+        !Number.isNaN(parsedUnitCustomerPrice) && parsedUnitCustomerPrice >= 0;
+
+    const totalPurchaseAmount =
+        isValidQuantity && isValidUnitPurchasePrice
+            ? parsedUnitPurchasePrice * parsedQuantity
+            : null;
+
+    const totalCostForUs =
+        totalPurchaseAmount !== null && isValidShippingCost
+            ? totalPurchaseAmount + parsedShippingCost
+            : null;
+
+    const totalPriceForCustomer =
+        isValidQuantity && isValidUnitCustomerPrice
+            ? parsedUnitCustomerPrice * parsedQuantity
+            : null;
 
     const profit =
-        totalPurchaseCost === null || totalSaleValue === null
-            ? null
-            : totalSaleValue - totalPurchaseCost;
+        totalCostForUs !== null && totalPriceForCustomer !== null
+            ? totalPriceForCustomer - totalCostForUs
+            : null;
 
     const profitClass =
         profit === null
@@ -83,40 +138,52 @@ export const AddPurchaseForm = ({
             return;
         }
 
-        if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
+        if (!isValidQuantity) {
             setError("Antal måste vara minst 1.");
             return;
         }
 
-        if (Number.isNaN(parsedPurchasePrice) || parsedPurchasePrice < 0) {
-            setError("Inköpspris måste vara 0 eller mer.");
+        if (!isValidUnitPurchasePrice) {
+            setError("Kostnad per styck måste vara 0 eller mer.");
             return;
         }
 
-        if (Number.isNaN(parsedShippingCost) || parsedShippingCost < 0) {
+        if (!isValidShippingCost) {
             setError("Frakt måste vara 0 eller mer.");
             return;
         }
 
-        if (Number.isNaN(parsedSalePrice) || parsedSalePrice < 0) {
-            setError("Utpris måste vara 0 eller mer.");
+        if (!isValidUnitCustomerPrice) {
+            setError("Pris till kund per styck måste vara 0 eller mer.");
             return;
         }
 
         try {
             setLoading(true);
 
-            await addPurchase(errandId, {
+            const payload = {
                 itemName: itemName.trim(),
                 quantity: parsedQuantity,
-                purchasePrice: parsedPurchasePrice,
+                purchasePrice: parsedUnitPurchasePrice,
                 shippingCost: parsedShippingCost,
-                salePrice: parsedSalePrice,
-            });
+                salePrice: parsedUnitCustomerPrice,
+            };
+
+            if (isEditMode && purchaseToEdit) {
+                await updatePurchase(purchaseToEdit.purchaseId, payload);
+            } else {
+                await addPurchase(errandId, payload);
+            }
 
             await onSaved();
         } catch (e) {
-            setError(e instanceof Error ? e.message : "Kunde inte spara inköpet.");
+            setError(
+                e instanceof Error
+                    ? e.message
+                    : isEditMode
+                        ? "Kunde inte uppdatera inköpet."
+                        : "Kunde inte spara inköpet.",
+            );
         } finally {
             setLoading(false);
         }
@@ -133,13 +200,13 @@ export const AddPurchaseForm = ({
             ].join(" ")}
         >
             <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                Nytt inköp
+                {isEditMode ? "Redigera inköp" : "Nytt inköp"}
             </h3>
 
             <div className="space-y-4">
                 <div>
                     <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Vad som köpts
+                        Ange inköp
                     </label>
                     <input
                         ref={firstInputRef}
@@ -167,14 +234,15 @@ export const AddPurchaseForm = ({
 
                 <div>
                     <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Inköpspris
+                        Kostnad per styck
                     </label>
                     <input
                         type="number"
                         min="0"
                         step="0.01"
-                        value={purchasePrice}
-                        onChange={(event) => setPurchasePrice(event.target.value)}
+                        value={unitPurchasePrice}
+                        onChange={(event) => setUnitPurchasePrice(event.target.value)}
+                        placeholder="Ex. 450"
                         className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
                     />
                 </div>
@@ -195,37 +263,45 @@ export const AddPurchaseForm = ({
 
                 <div>
                     <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Utpris
+                        Pris till kund per styck
                     </label>
                     <input
                         type="number"
                         min="0"
                         step="0.01"
-                        value={salePrice}
-                        onChange={(event) => setSalePrice(event.target.value)}
+                        value={unitCustomerPrice}
+                        onChange={(event) => setUnitCustomerPrice(event.target.value)}
+                        placeholder="Ex. 799"
                         className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
                     />
                 </div>
 
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
-                    <div className="flex items-center justify-between">
-                        <span>Total kostnad</span>
+                    <div className="mt-1 flex items-center justify-between">
+                        <span>Total kostnad:</span>
+                        <span>{formatMoney(totalCostForUs)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between font-light">
+                        <span>Kostnad/st:</span>
                         <span>
-                            {totalPurchaseCost === null ? "—" : `${totalPurchaseCost.toFixed(2)} kr`}
+                            {isValidUnitPurchasePrice
+                                ? formatMoney(parsedUnitPurchasePrice)
+                                : "—"}
                         </span>
                     </div>
 
-                    <div className="mt-1 flex items-center justify-between">
-                        <span>Totalt utpris</span>
-                        <span>
-                            {totalSaleValue === null ? "—" : `${totalSaleValue.toFixed(2)} kr`}
-                        </span>
+                    <div className="mt-1 flex items-center justify-between font-light">
+                        <span>Totalpris till kund:</span>
+                        <span>{formatMoney(totalPriceForCustomer)}</span>
                     </div>
 
                     <div className="mt-1 flex items-center justify-between font-semibold">
                         <span>Resultat</span>
                         <span className={profitClass}>
-                            {profit === null ? "—" : `${profit > 0 ? "+" : ""}${profit.toFixed(2)} kr`}
+                            {profit === null
+                                ? "—"
+                                : `${profit > 0 ? "+" : ""}${profit.toFixed(2)} kr`}
                         </span>
                     </div>
                 </div>
@@ -243,7 +319,13 @@ export const AddPurchaseForm = ({
                         onClick={handleSave}
                         className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        {loading ? "Sparar..." : "Spara inköp"}
+                        {loading
+                            ? isEditMode
+                                ? "Sparar ändringar..."
+                                : "Sparar..."
+                            : isEditMode
+                                ? "Spara ändringar"
+                                : "Spara inköp"}
                     </button>
 
                     <button

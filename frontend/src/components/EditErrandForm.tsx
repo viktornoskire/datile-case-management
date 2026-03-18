@@ -1,4 +1,4 @@
-import {type FormEvent, useEffect, useMemo, useState} from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     addErrandHistoryEntry,
     deletePurchase,
@@ -17,8 +17,8 @@ import {
     type PriorityLookup,
     type StatusLookup,
 } from "../api/LookupsApi";
-import type {ErrandDetails} from "../types/errands";
-import {AddPurchaseForm} from "./AddPurchaseForm";
+import type { ErrandDetails } from "../types/errands";
+import { AddPurchaseForm } from "./AddPurchaseForm";
 
 type EditErrandFormProps = {
     errand: ErrandDetails;
@@ -26,6 +26,8 @@ type EditErrandFormProps = {
     onSaved: (updatedErrand: ErrandDetails) => void;
     startWithPurchaseFormOpen?: boolean;
 };
+
+type PurchaseItem = NonNullable<ErrandDetails["purchases"]>[number];
 
 const formatDate = (iso?: string | null) => {
     if (!iso) return "";
@@ -113,6 +115,7 @@ export const EditErrandForm = ({
     const [isAddingPurchase, setIsAddingPurchase] = useState(startWithPurchaseFormOpen);
     const [purchaseIdToDelete, setPurchaseIdToDelete] = useState<number | null>(null);
     const [isDeletingPurchase, setIsDeletingPurchase] = useState(false);
+    const [purchaseToEdit, setPurchaseToEdit] = useState<PurchaseItem | null>(null);
 
     const [statuses, setStatuses] = useState<StatusLookup[]>([]);
     const [priorities, setPriorities] = useState<PriorityLookup[]>([]);
@@ -124,6 +127,12 @@ export const EditErrandForm = ({
     const [isSaving, setIsSaving] = useState(false);
     const [lookupError, setLookupError] = useState("");
     const [submitError, setSubmitError] = useState("");
+
+    const handleEditPurchaseClick = (purchase: PurchaseItem) => {
+        setSubmitError("");
+        setIsAddingPurchase(false);
+        setPurchaseToEdit(purchase);
+    };
 
     useEffect(() => {
         setTitle(errand.title);
@@ -140,6 +149,7 @@ export const EditErrandForm = ({
         setNewHistoryEntry("");
         setIsAddingPurchase(startWithPurchaseFormOpen);
         setPurchaseIdToDelete(null);
+        setPurchaseToEdit(null);
         setSubmitError("");
     }, [errand, startWithPurchaseFormOpen]);
 
@@ -286,7 +296,7 @@ export const EditErrandForm = ({
         }
     };
 
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitError("");
 
@@ -469,11 +479,10 @@ export const EditErrandForm = ({
                 </div>
 
                 <div>
-                    <label
-                        className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                         <span
                             className="inline-block h-2.5 w-2.5 rounded-full"
-                            style={{backgroundColor: selectedPriority?.color ?? "#FFFFFF"}}
+                            style={{ backgroundColor: selectedPriority?.color ?? "#FFFFFF" }}
                         />
                         Prioritet
                     </label>
@@ -642,11 +651,11 @@ export const EditErrandForm = ({
 
                     <div className="space-y-3 pt-2">
                         <div className="mb-2 text-base font-bold uppercase tracking-wide text-slate-700">
-                            Inköp
+                            lista på inköp
                         </div>
 
                         {purchases.length === 0 ? (
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
                                 Inga inköp än.
                             </div>
                         ) : (
@@ -654,52 +663,78 @@ export const EditErrandForm = ({
                                 {purchases.map((purchase) => {
                                     const profit = Number(purchase.profit ?? 0);
 
+                                    const profitTone =
+                                        profit > 0
+                                            ? "border-green-200 bg-green-50 text-green-700"
+                                            : profit < 0
+                                                ? "border-red-200 bg-red-50 text-red-700"
+                                                : "border-slate-200 bg-slate-50 text-slate-600";
+
                                     return (
                                         <li
                                             key={purchase.purchaseId}
-                                            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                                            className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                                         >
                                             <div className="flex items-start justify-between gap-3">
-                                                <div>
-                                                    <div className="text-sm font-semibold text-slate-900">
+                                                <div className="min-w-0">
+                                                    <div className="text-lg font-semibold text-slate-900">
                                                         {purchase.itemName}
                                                     </div>
-                                                    <div className="mt-1 text-xs text-slate-500">
+                                                    <div className="mt-1 text-sm text-slate-500">
                                                         {purchase.quantity} st
                                                     </div>
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
-                                                    <span
-                                                        className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${
-                                                            profit > 0
-                                                                ? "border-green-200 bg-green-50 text-green-700"
-                                                                : profit < 0
-                                                                    ? "border-red-200 bg-red-50 text-red-700"
-                                                                    : "border-slate-200 bg-slate-50 text-slate-600"
-                                                        }`}
-                                                    >
-                                                        {profit > 0 ? "+" : ""}
-                                                        {profit.toFixed(2)} kr
-                                                    </span>
+                            <span
+                                className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${profitTone}`}
+                            >
+                                {profit > 0 ? "+" : ""}
+                                {formatMoney(profit)}
+                            </span>
 
                                                     <button
                                                         type="button"
                                                         onClick={() => handleDeletePurchaseClick(purchase.purchaseId)}
-                                                        className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
+                                                        className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                                                     >
                                                         Ta bort
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleEditPurchaseClick(purchase)}
+                                                        className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                                                    >
+                                                        Redigera
                                                     </button>
                                                 </div>
                                             </div>
 
-                                            <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                                                <div>Inköpspris: {formatMoney(purchase.purchasePrice)}</div>
-                                                <div>Frakt: {formatMoney(purchase.shippingCost)}</div>
-                                                <div className="font-semibold">
-                                                    Utpris: {formatMoney(purchase.salePrice)}
+                                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                                                <div className="space-y-2 text-sm text-slate-700">
+                                                    <div>
+                                                        Inköpspris:{" "}
+                                                        {formatMoney(purchase.purchasePrice * purchase.quantity)}
+                                                    </div>
+                                                    <div>
+                                                        Fraktkostnad: {formatMoney(purchase.shippingCost)}
+                                                    </div>
+                                                    <div className="font-semibold text-slate-900">
+                                                        Total kostnad: {formatMoney(purchase.totalPurchaseCost)}
+                                                    </div>
                                                 </div>
-                                                <div>Total kostnad: {formatMoney(purchase.totalPurchaseCost)}</div>
+
+                                                <div className="flex justify-end">
+                                                    <div className="ml-auto mt-auto w-fit text-right">
+                                                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                            Pris till kund
+                                                        </div>
+                                                        <div className="mt-1 text-sm font-semibold text-slate-900">
+                                                            {formatMoney(purchase.salePrice * purchase.quantity)}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </li>
                                     );
@@ -738,16 +773,17 @@ export const EditErrandForm = ({
                             </div>
                         )}
 
-                        {!isAddingPurchase ? (
-                            <button
-                                type="button"
-                                onClick={() => setIsAddingPurchase(true)}
-                                className="rounded-full border border-slate-200 bg-white px-6 py-2 text-sm font-semibold text-[#F08A7E] shadow-[0_2px_6px_rgba(15,23,42,0.12)] transition hover:bg-slate-50"
-                            >
-                                <span className="mr-2 text-slate-700">+</span>
-                                Lägg till inköp
-                            </button>
-                        ) : (
+                        {purchaseToEdit ? (
+                            <AddPurchaseForm
+                                errandId={errand.errandId}
+                                purchaseToEdit={purchaseToEdit}
+                                onSaved={async () => {
+                                    await reloadErrand();
+                                    setPurchaseToEdit(null);
+                                }}
+                                onCancel={() => setPurchaseToEdit(null)}
+                            />
+                        ) : isAddingPurchase ? (
                             <AddPurchaseForm
                                 errandId={errand.errandId}
                                 onSaved={async () => {
@@ -756,6 +792,18 @@ export const EditErrandForm = ({
                                 }}
                                 onCancel={() => setIsAddingPurchase(false)}
                             />
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setPurchaseToEdit(null);
+                                    setIsAddingPurchase(true);
+                                }}
+                                className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold text-[#E85D5D] shadow-sm transition hover:bg-slate-50"
+                            >
+                                <span className="mr-2 text-slate-700">🛒</span>
+                                Lägg till inköp
+                            </button>
                         )}
                     </div>
                 </div>

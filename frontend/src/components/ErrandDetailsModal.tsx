@@ -3,6 +3,7 @@ import type {CSSProperties, ReactNode} from "react";
 import {fetchErrandById} from "../api/errandsApi";
 import {EditErrandForm} from "./EditErrandForm";
 import type {ErrandDetails} from "../types/errands";
+import {calculatePurchaseSummary} from "../utils/purchaseSummary";
 
 type ErrandDetailsModalProps = {
     errandId: number;
@@ -135,7 +136,9 @@ export const ErrandDetailsModal = ({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(mode === "edit");
-    const [openPurchaseFormOnEdit, setOpenPurchaseFormOnEdit] = useState(startWithPurchaseFormOpen);
+    const [openPurchaseFormOnEdit, setOpenPurchaseFormOnEdit] = useState(
+        startWithPurchaseFormOpen,
+    );
 
     const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -201,17 +204,23 @@ export const ErrandDetailsModal = ({
     const mail = data?.contact?.mail ?? "—";
     const history = data?.history ?? [];
     const purchases = data?.purchases ?? [];
+    const purchaseSummary = useMemo(
+        () => calculatePurchaseSummary(purchases),
+        [purchases],
+    );
 
     const handleSaved = (updatedErrand: ErrandDetails) => {
         setData(updatedErrand);
         setIsEditing(false);
+        setOpenPurchaseFormOnEdit(false);
         onErrandUpdated(updatedErrand);
     };
 
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
-            onClick={onClose}
+            onClick={!isEditing ? onClose : undefined}
+            onDoubleClick={isEditing ? onClose : undefined}
         >
             <div
                 ref={dialogRef}
@@ -220,6 +229,7 @@ export const ErrandDetailsModal = ({
                 tabIndex={-1}
                 className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white shadow-2xl outline-none"
                 onClick={(event) => event.stopPropagation()}
+                onDoubleClick={(event) => event.stopPropagation()}
             >
                 <div className="h-2 rounded-t-3xl" style={priorityUi.accentStyle}/>
 
@@ -343,60 +353,146 @@ export const ErrandDetailsModal = ({
 
                                     <section className="rounded-2xl border border-slate-200 bg-white p-5">
                                         <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                                            Inköp
+                                            Lista på inköp
                                         </h3>
 
                                         {purchases.length === 0 ? (
                                             <div className="text-sm text-slate-500">Inga inköp än.</div>
                                         ) : (
-                                            <ul className="space-y-3">
-                                                {purchases.map((purchase) => {
-                                                    const profit = Number(purchase.profit ?? 0);
-                                                    const profitTone = getProfitTone(profit);
+                                            <div className="space-y-4">
+                                                <ul className="space-y-3">
+                                                    {purchases.map((purchase) => {
+                                                        const profit = Number(purchase.profit ?? 0);
+                                                        const profitTone = getProfitTone(profit);
 
-                                                    return (
-                                                        <li
-                                                            key={purchase.purchaseId}
-                                                            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
-                                                        >
-                                                            <div className="flex items-start justify-between gap-3">
-                                                                <div className="min-w-0">
-                                                                    <div
-                                                                        className="text-sm font-semibold text-slate-900">
-                                                                        {safe(purchase.itemName)}
+                                                        return (
+                                                            <li
+                                                                key={purchase.purchaseId}
+                                                                className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
+                                                            >
+                                                                <div className="flex items-start justify-between gap-4">
+                                                                    <div className="min-w-0">
+                                                                        <div className="text-lg font-semibold text-slate-900">
+                                                                            {safe(purchase.itemName)}
+                                                                        </div>
+
+                                                                        <div className="mt-2 space-y-1 text-sm text-slate-500">
+                                                                            <div>{purchase.quantity} st</div>
+                                                                            <div className="italic">
+                                                                                Styckepris: {formatMoney(purchase.purchasePrice)}
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="mt-1 text-xs text-slate-500">
-                                                                        {purchase.quantity} st
+
+                                                                    <span
+                                                                        className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${profitTone}`}
+                                                                    >
+            {profit > 0 ? "+" : ""}
+                                                                        {formatMoney(profit)}
+        </span>
+                                                                </div>
+
+                                                                <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+                                                                    <div className="space-y-1">
+                                                                        <div className="text-base font-semibold text-slate-900">
+                                                                            Summa inköp: {formatMoney(purchase.totalPurchaseCost)}
+                                                                        </div>
+                                                                        <div className="text-sm italic text-slate-500">
+                                                                            Varav frakt: {formatMoney(purchase.shippingCost)}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="flex justify-end">
+                                                                        <div className="rounded-xl border border-slate-200 bg-white px-2 py-1 text-right shadow-sm">
+                                                                            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                                                pris till kund:
+                                                                            </div>
+                                                                            <div className="mt-1 text-base font-semibold text-slate-900">
+                                                                                {formatMoney(purchase.totalSaleValue)}
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
 
-                                                                <span
-                                                                    className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${profitTone}`}
-                                                                >
-                                                                    {profit > 0 ? "+" : ""}
-                                                                    {formatMoney(profit)}
-                                                                </span>
-                                                            </div>
+                                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                                    <h4 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
+                                                        Summering av inköp i ärendet
+                                                    </h4>
 
-                                                            <div
-                                                                className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                                                                <div>
-                                                                    Inköpspris: {formatMoney(purchase.purchasePrice)}
+                                                    <div className="grid gap-4 lg:grid-cols-2">
+                                                        <div
+                                                            className="rounded-xl border border-slate-200 bg-white p-4">
+                                                            <h5 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                                                För företaget
+                                                            </h5>
+
+                                                            <div className="space-y-2 text-sm">
+                                                                <div className="flex items-center justify-between font-semibold">
+                                                                    <span>Inköpskostnader:</span>
+                                                                    <span>
+                        {formatMoney(purchaseSummary.totalPurchaseAmountExclShipping)}
+                    </span>
                                                                 </div>
-                                                                <div>
-                                                                    Frakt: {formatMoney(purchase.shippingCost)}
+
+                                                                <div className="flex items-center justify-between">
+                                                                    <span>Fraktkostnader:</span>
+                                                                    <span>{formatMoney(purchaseSummary.totalShippingCost)}</span>
                                                                 </div>
+
                                                                 <div
-                                                                    className="font-semibold">Utpris: {formatMoney(purchase.salePrice)}</div>
-                                                                <div>
-                                                                    Total
-                                                                    kostnad: {formatMoney(purchase.totalPurchaseCost)}
+                                                                    className="flex items-center justify-between font-semibold">
+                                                                    <span>Vi betalar: </span>
+                                                                    <span>{formatMoney(purchaseSummary.totalCostForUs)}</span>
+                                                                </div>
+
+                                                                <div
+                                                                    className="flex items-center justify-between font-semibold">
+                                                                    <span>Resultat</span>
+                                                                    <span
+                                                                        className={
+                                                                            purchaseSummary.totalProfit > 0
+                                                                                ? "text-green-700"
+                                                                                : purchaseSummary.totalProfit < 0
+                                                                                    ? "text-red-700"
+                                                                                    : "text-slate-600"
+                                                                        }
+                                                                    >
+                        {purchaseSummary.totalProfit > 0 ? "+" : ""}
+                                                                        {formatMoney(purchaseSummary.totalProfit)}
+                    </span>
                                                                 </div>
                                                             </div>
-                                                        </li>
-                                                    );
-                                                })}
-                                            </ul>
+                                                        </div>
+
+                                                        <div
+                                                            className="rounded-xl border border-slate-200 bg-white p-4">
+                                                            <h5 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                                                För kunden
+                                                            </h5>
+                                                            <div
+                                                                className="flex items-center justify-between font-semibold">
+                                                                <span>Kund betalar</span>
+                                                                <span>{formatMoney(purchaseSummary.totalCustomerPrice)}</span>
+                                                            </div>
+                                                            <div className="space-y-2 text-sm">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span> För antal varor: </span>
+                                                                    <span>{purchaseSummary.totalQuantity} st </span>
+                                                                </div>
+
+                                                                <div
+                                                                    className="flex items-center justify-between font-light text-s">
+                                                                    <span> OBS: Att ärendets överenskomna pris justeras manuellt i redigeringsvyn och PÅVERKAS INTE av inköp </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         )}
                                     </section>
 
@@ -418,7 +514,8 @@ export const ErrandDetailsModal = ({
                                                             {safe(item.description)}
                                                         </div>
                                                         <div className="mt-2 text-xs text-slate-500">
-                                                            {safe(item.verifiedName)} · {formatDateTime(item.createdAt)}
+                                                            {safe(item.verifiedName)} ·{" "}
+                                                            {formatDateTime(item.createdAt)}
                                                         </div>
                                                     </li>
                                                 ))}
@@ -454,18 +551,22 @@ export const ErrandDetailsModal = ({
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    setOpenPurchaseFormOnEdit(false);
+                                                    setOpenPurchaseFormOnEdit(true);
                                                     setIsEditing(true);
                                                 }}
                                                 className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-2 text-sm font-semibold text-[#E85D5D] shadow-[0_2px_6px_rgba(15,23,42,0.12)] transition hover:bg-slate-50"
                                             >
-                                                <span className="mr-2 text-base leading-none text-slate-700">+</span>
+                                                <span className="mr-2 text-base leading-none text-slate-700">🛒</span>
                                                 Lägg till inköp
                                             </button>
+
                                             <button
                                                 type="button"
                                                 className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
-                                                onClick={() => setIsEditing(true)}
+                                                onClick={() => {
+                                                    setOpenPurchaseFormOnEdit(false);
+                                                    setIsEditing(true);
+                                                }}
                                             >
                                                 Redigera
                                             </button>

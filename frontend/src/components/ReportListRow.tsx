@@ -1,5 +1,5 @@
-import type { ReportListItem } from "../types/reports";
-import { getPriorityStyles } from "../utils/priorityStyles";
+import type {ReportListItem} from "../types/reports";
+import {getPriorityStyles} from "../utils/priorityStyles";
 
 const safe = (value?: string | null) =>
     value && value.trim().length > 0 ? value : "—";
@@ -97,15 +97,6 @@ export const ReportListRow = ({
                     </div>
 
                     <div className="mt-4 grid grid-cols-1 gap-3 xs:grid-cols-2">
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
-                            <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                                Överenskommet pris
-                            </div>
-                            <div className="mt-1 text-sm font-semibold text-slate-900">
-                                {formatMoney(report.totalOutprice)}
-                            </div>
-                        </div>
-
                         <button
                             type="button"
                             onClick={() => onEdit(report.errandId)}
@@ -116,11 +107,13 @@ export const ReportListRow = ({
                     </div>
 
                     {isExpanded && (
-                        <div className="mt-4 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 p-4 shadow-sm">
+                        <div
+                            className="mt-4 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 p-4 shadow-sm">
                             <div className="mb-3 flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="inline-flex items-center rounded-full bg-sky-700 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
-                                        Inköp
+                                    <div
+                                        className="inline-flex items-center rounded-full bg-sky-700 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                                        Inköp för ärende #{String(report.errandId).padStart(3, "0")}
                                     </div>
 
                                     <button
@@ -128,7 +121,7 @@ export const ReportListRow = ({
                                         onClick={() => onQuickAddPurchase(report.errandId)}
                                         className="inline-flex items-center rounded-full border border-sky-300 bg-white px-3 py-1 text-[11px] font-semibold text-sky-800 transition hover:bg-sky-50"
                                     >
-                                        🛒 Lägg till
+                                        🛒 Lägg till / ändra
                                     </button>
                                 </div>
 
@@ -145,7 +138,7 @@ export const ReportListRow = ({
 
                             {purchases.length === 0 ? (
                                 <div className="text-sm text-slate-500">
-                                    Inga inköp kopplade till ärendet.
+                                    Inga inköp i ärendet.
                                 </div>
                             ) : (
                                 <ul className="space-y-3">
@@ -165,11 +158,17 @@ export const ReportListRow = ({
                                                     </div>
                                                 </div>
 
-                                                <div className="shrink-0 text-sm font-semibold text-slate-900">
-                                                    {formatMoney(
-                                                        (purchase.quantity ?? 0) *
-                                                        (purchase.salePrice ?? 0),
-                                                    )}
+                                                <div className="shrink-0 text-right">
+                                                    <div
+                                                        className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                                                        pris
+                                                    </div>
+                                                    <div className="mt-1 text-sm font-semibold text-slate-900">
+                                                        {formatMoney(
+                                                            (purchase.quantity ?? 0) *
+                                                            (purchase.salePrice ?? 0),
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </li>
@@ -220,13 +219,13 @@ export const ReportListRow = ({
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                            <InfoCard label="Ansvarig" value={safe(report.assignee?.name)} />
-                            <InfoCard label="Status" value={safe(report.status?.name)} />
-                            <InfoCard label="Tid" value={`${report.timeSpent ?? 0} h`} />
-                            <InfoCard label="Skapad" value={formatDate(report.createdAt)} />
+                            <InfoCard label="Ansvarig" value={safe(report.assignee?.name)}/>
+                            <InfoCard label="Status" value={safe(report.status?.name)}/>
+                            <InfoCard label="Tid" value={`${report.timeSpent ?? 0} h`}/>
+                            <InfoCard label="Skapad" value={formatDate(report.createdAt)}/>
                             <InfoCard
                                 label="Överenskommet pris"
-                                value={formatMoney(report.totalOutprice)}
+                                value={formatMoney(report.agreedPrice)}
                                 valueClassName="font-semibold text-slate-900"
                             />
                         </div>
@@ -243,10 +242,12 @@ export const ReportListRow = ({
                     </div>
 
                     {isExpanded && (
-                        <div className="mt-4 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 p-5 shadow-sm">
+                        <div
+                            className="mt-4 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 p-5 shadow-sm">
                             <div className="mb-4 flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="inline-flex items-center rounded-full bg-sky-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
+                                    <div
+                                        className="inline-flex items-center rounded-full bg-sky-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
                                         Inköp för ärende #{String(report.errandId).padStart(3, "0")}
                                     </div>
 
@@ -255,7 +256,7 @@ export const ReportListRow = ({
                                         onClick={() => onQuickAddPurchase(report.errandId)}
                                         className="inline-flex items-center rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-semibold text-sky-800 transition hover:bg-sky-50"
                                     >
-                                        🛒 Lägg till
+                                        🛒 Lägg till / ändra
                                     </button>
                                 </div>
 
@@ -292,11 +293,17 @@ export const ReportListRow = ({
                                                     </div>
                                                 </div>
 
-                                                <div className="shrink-0 text-sm font-semibold text-slate-900">
-                                                    {formatMoney(
-                                                        (purchase.quantity ?? 0) *
-                                                        (purchase.salePrice ?? 0),
-                                                    )}
+                                                <div className="shrink-0 text-right">
+                                                    <div
+                                                        className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                                                        pris
+                                                    </div>
+                                                    <div className="mt-1 text-sm font-semibold text-slate-900">
+                                                        {formatMoney(
+                                                            (purchase.quantity ?? 0) *
+                                                            (purchase.salePrice ?? 0),
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </li>
@@ -309,7 +316,8 @@ export const ReportListRow = ({
 
                 {/* Desktop */}
                 <div className="hidden xl:block">
-                    <div className="grid grid-cols-[56px_72px_minmax(180px,1.6fr)_minmax(110px,0.9fr)_minmax(100px,0.8fr)_110px_80px_100px_130px_120px] items-center gap-3">
+                    <div
+                        className="grid grid-cols-[56px_72px_minmax(180px,1.6fr)_minmax(110px,0.9fr)_minmax(100px,0.8fr)_110px_80px_100px_130px_120px] items-center gap-3">
                         <div>
                             <button
                                 type="button"
@@ -361,7 +369,7 @@ export const ReportListRow = ({
                         </div>
 
                         <div className="text-sm font-medium text-slate-900">
-                            {formatMoney(report.totalOutprice)}
+                            {formatMoney(report.agreedPrice)}
                         </div>
 
                         <div className="flex items-center justify-end">
@@ -376,10 +384,12 @@ export const ReportListRow = ({
                     </div>
 
                     {isExpanded && (
-                        <div className="mt-4 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 p-5 shadow-sm">
+                        <div
+                            className="mt-4 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 p-5 shadow-sm">
                             <div className="mb-4 flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="inline-flex items-center rounded-full bg-sky-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
+                                    <div
+                                        className="inline-flex items-center rounded-full bg-sky-700 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
                                         Inköp för ärende #{String(report.errandId).padStart(3, "0")}
                                     </div>
 
@@ -388,7 +398,7 @@ export const ReportListRow = ({
                                         onClick={() => onQuickAddPurchase(report.errandId)}
                                         className="inline-flex items-center rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-semibold text-sky-800 transition hover:bg-sky-50"
                                     >
-                                        🛒 Lägg till
+                                        🛒 Lägg till / ändra
                                     </button>
                                 </div>
 
@@ -425,11 +435,17 @@ export const ReportListRow = ({
                                                     </div>
                                                 </div>
 
-                                                <div className="text-sm font-semibold text-slate-900">
-                                                    {formatMoney(
-                                                        (purchase.quantity ?? 0) *
-                                                        (purchase.salePrice ?? 0),
-                                                    )}
+                                                <div className="shrink-0 text-right">
+                                                    <div
+                                                        className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                                                        Pris
+                                                    </div>
+                                                    <div className="mt-1 text-sm font-semibold text-slate-900">
+                                                        {formatMoney(
+                                                            (purchase.quantity ?? 0) *
+                                                            (purchase.salePrice ?? 0),
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </li>
@@ -450,7 +466,7 @@ type InfoCardProps = {
     valueClassName?: string;
 };
 
-const InfoCard = ({ label, value, valueClassName = "" }: InfoCardProps) => (
+const InfoCard = ({label, value, valueClassName = ""}: InfoCardProps) => (
     <div className="rounded-xl border border-slate-200 bg-white px-3 py-3">
         <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
             {label}

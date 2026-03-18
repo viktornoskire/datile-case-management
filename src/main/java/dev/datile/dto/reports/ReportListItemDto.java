@@ -21,6 +21,6 @@ public record ReportListItemDto(
         BigDecimal timeSpent,
         AssigneeDto assignee,
         List<ReportPurchaseDto> purchases,
-        BigDecimal totalOutprice
+        BigDecimal agreedPrice
 ) {
 }

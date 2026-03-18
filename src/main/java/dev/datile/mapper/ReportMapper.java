@@ -38,7 +38,7 @@ public class ReportMapper {
                 errand.getTimeSpent(),
                 toAssigneeDto(errand),
                 purchaseDtos,
-                totalOutprice
+                errand.getAgreedPrice()
         );
     }
 
