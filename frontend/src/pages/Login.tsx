@@ -14,11 +14,6 @@ export default function Login() {
     const navigate = useNavigate();
     const { refreshAuth } = useAuth();
 
-    const [rememberMe, setRememberMe] = useState(false);
-    const toggleRemember = () => {
-        setRememberMe(!rememberMe);
-    }
-
     const [error, setError] = useState<boolean>(false);
     const toggleError = () => {
         setError(!error);
@@ -59,8 +54,6 @@ export default function Login() {
                 <label className={`font-bold font-poppins -mb-2 mt-4`}>Lösenord</label>
                 <input name="password" type="password" required className={`border border-[#D9D9D9] font-semibold rounded-md p-2 outline-none`} />
                 <button type="submit" className={`bg-[#001A31] text-[#F7F7F7] font-semibold font-poppins rounded-md text-sm py-2 hover:bg-[#001A3F] hover:scale-99 transition active:scale-95`}>Logga in</button>
-                <p className={`underline text-sm cursor-pointer`} onClick={toggleRemember}>Har du glömt lösenordet?</p>
-                <h1 className={`text-3xl font-mono ${rememberMe ? "block" : "hidden"}`}>Synd!</h1>
             </form>
         </div>
         </>

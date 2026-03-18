@@ -7,3 +7,6 @@ spring:
 
   flyway:
     enabled: ${SPRING_FLYWAY_ENABLED:true}
+
+jwt:
+  secret: ${JWT_SECRET:default_test_secret_key_that_is_long_enough_12345}

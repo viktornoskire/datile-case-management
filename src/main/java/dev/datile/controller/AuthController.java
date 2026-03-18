@@ -5,6 +5,7 @@ import dev.datile.dto.security.LoginRequest;
 import dev.datile.service.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.username,
@@ -45,8 +46,21 @@ public class AuthController {
 
         response.addCookie(cookie);
 
-        return new AuthResponse("Login successful");
+        return ResponseEntity.ok(Map.of("token", token));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("jwt", "");
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setSecure(false);
+
+        response.addCookie(cookie);
+        return ResponseEntity.ok().build();
+    }
+
 
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {

@@ -31,32 +31,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain chain
     ) throws ServletException, IOException {
 
-        String token = null;
-        Cookie[] cookies = request.getCookies();
+        String token = extractJwtFromCookies(request);
 
-        // Extract JWT from cookie
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("jwt".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
-        }
+        if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                String username = jwtService.extractUsername(token);
 
-        if (token != null) {
-
-            String username = jwtService.getUsernameFromToken(token);
-
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                if (jwtService.validateToken(token, username)) {
+                if (username != null && jwtService.validateToken(token, username)) {
 
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
                                     username,
                                     null,
-                                    List.of()
+                                    List.of() // ⚠️ no roles yet
                             );
 
                     auth.setDetails(
@@ -65,9 +52,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
+
+            } catch (Exception e) {
+                // Token invalid or expired → ignore
+                // (user stays unauthenticated)
             }
         }
 
         chain.doFilter(request, response);
+    }
+
+    private String extractJwtFromCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) return null;
+
+        for (Cookie cookie : cookies) {
+            if ("jwt".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 }

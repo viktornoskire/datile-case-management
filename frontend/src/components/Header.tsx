@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import type { NavLinkRenderProps } from "react-router-dom";
 import { useState } from "react";
+import {apiClient} from "../services/apiClient.ts";
 
 export default function Header() {
     // Reusable styling for nav links
@@ -37,7 +38,15 @@ export default function Header() {
                     <NavLink to={"/purchases"} className={navLinkClass} onClick={toggleModal}>INKÖP</NavLink>
                     <NavLink to={"/users"} className={navLinkClass} onClick={toggleModal}>ANVÄNDARE</NavLink>
                     <NavLink to={"/settings"} className={navLinkClass} onClick={toggleModal}>INSTÄLLNINGAR</NavLink>
-                    <button className={`flex items-center justify-center py-1 mt-6 sm:mt-0 sm:ml-2 lg:px-8 md:px-4 sm:px-2 bg-[#99D0B6] rounded-xl sm:rounded-full drop-shadow-md transition hover:scale-98 hover:bg-[#88BFA5] active:scale-95 w-full sm:w-auto`}>LOGGA UT</button>
+                    <button
+                        className={`flex items-center justify-center py-1 mt-6 sm:mt-0 sm:ml-2 lg:px-8 md:px-4 sm:px-2 bg-[#99D0B6] rounded-xl sm:rounded-full drop-shadow-md transition hover:scale-98 hover:bg-[#88BFA5] active:scale-95 w-full sm:w-auto`}
+                        onClick={async () => {
+                                await apiClient.post("/api/auth/logout", {});
+                                window.location.href = "/login";
+                        }}
+                    >
+                        LOGGA UT
+                    </button>
                 </nav>
             </header>
 

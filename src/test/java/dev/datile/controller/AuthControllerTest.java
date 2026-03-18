@@ -70,4 +70,53 @@ public class AuthControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void logout_should_remove_jwt_cookie() throws Exception {
+        String body = """
+                {
+                    "username": "user@gmail.com",
+                    "password": "password"
+                }
+                """;
+        MvcResult result =  mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(cookie().exists("jwt"))
+                .andReturn();
+
+        Cookie jwtCookie = result.getResponse().getCookie("jwt");
+
+        mockMvc.perform(post("/api/auth/logout")
+                .cookie(jwtCookie))
+                .andExpect(status().isOk())
+                .andExpect(cookie().value("jwt", ""))
+                .andExpect(cookie().maxAge("jwt", 0));
+    }
+
+    @Test
+    void logout_should_remove_jwt_cookie_and_return_401_on_errands() throws Exception {
+        String body = """
+                {
+                    "username": "user@gmail.com",
+                    "password": "password"
+                }
+                """;
+        MvcResult result =  mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(cookie().exists("jwt"))
+                .andReturn();
+
+        Cookie jwtCookie = result.getResponse().getCookie("jwt");
+
+        mockMvc.perform(post("/api/auth/logout")
+                        .cookie(jwtCookie))
+                .andExpect(status().isOk())
+                .andExpect(cookie().value("jwt", ""))
+                .andExpect(cookie().maxAge("jwt", 0));
+
+        mockMvc.perform(get("/api/errands"))
+                .andExpect(status().isUnauthorized());
+    }
+
 }
