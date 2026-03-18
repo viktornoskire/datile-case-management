@@ -1,6 +1,12 @@
-CREATE TABLE customers (
-                           customer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                           name VARCHAR(255) NOT NULL,
-                           customer_number VARCHAR(100) NOT NULL UNIQUE,
-                           is_active BOOLEAN NOT NULL DEFAULT TRUE
-);
+ALTER TABLE customers
+    ADD COLUMN customer_number VARCHAR(100);
+
+UPDATE customers
+SET customer_number = CONCAT('CUST-', customer_id)
+WHERE customer_number IS NULL;
+
+ALTER TABLE customers
+    MODIFY customer_number VARCHAR(100) NOT NULL;
+
+ALTER TABLE customers
+    ADD CONSTRAINT uk_customer_number UNIQUE (customer_number);
