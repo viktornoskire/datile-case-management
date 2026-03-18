@@ -4,7 +4,6 @@ import {Header} from "./index.ts";
 
 export function ProtectedRoutes() {
     const { user, loading } = useAuth();
-    console.log("ProtectedRoutes", { user, loading });
 
     if (loading) {
         return <div>Loading...</div>;

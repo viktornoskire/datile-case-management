@@ -18,8 +18,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
 
         try {
-            const data = await apiClient.get<{username: string}>("/api/auth/me");
-            setUser(data.username);
+            const data = await apiClient.get<{email: string}>("/api/auth/me");
+            setUser(data.email);
         } catch (err) {
             setUser(null);
         }

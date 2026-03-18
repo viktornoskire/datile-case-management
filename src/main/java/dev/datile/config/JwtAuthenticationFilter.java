@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,11 +40,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 if (username != null && jwtService.validateToken(token, username)) {
 
+                    String role = jwtService.getRoleFromToken(token);
+
+                    // ✅ critical safety
+                    if (role == null) {
+                        chain.doFilter(request, response);
+                        return;
+                    }
+
+                    var authorities = List.of(
+                            new SimpleGrantedAuthority("ROLE_" + role)
+                    );
+
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
                                     username,
                                     null,
-                                    List.of() // ⚠️ no roles yet
+                                    authorities
                             );
 
                     auth.setDetails(
@@ -53,9 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
 
-            } catch (Exception e) {
-                // Token invalid or expired → ignore
-                // (user stays unauthenticated)
+            } catch (Exception ignored) {
             }
         }
 

@@ -30,7 +30,7 @@ class ErrandControllerIntegrationTest {
     void getErrands_filters_by_statusIds() throws Exception {
         String body = """
                 {
-                    "username": "admin@gmail.com",
+                    "email": "jimmy@gmail.com",
                     "password": "password"
                 }
                 """;

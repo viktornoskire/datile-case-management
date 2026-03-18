@@ -82,13 +82,13 @@ public class SecurityConfig {
         return this::loadUserFromDatabase;
     }
 
-    public UserDetails loadUserFromDatabase(String username) {
+    public UserDetails loadUserFromDatabase(String email) {
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email));
 
         return org.springframework.security.core.userdetails.User
-                .withUsername(user.getUsername())
+                .withUsername(user.getEmail())
                 .password(user.getPassword())
                 .roles(user.getRole())
                 .build();

@@ -16,11 +16,16 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String SECRET;
 
-    public String generateToken(String username) {
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET.getBytes());
+    }
+
+    public String generateToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role) // ✅ critical fix
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24h
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -29,38 +34,29 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Date getExpirationDateFromToken(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    public String getRoleFromToken(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     public boolean validateToken(String token, String username) {
         try {
-            final String extractedUsername = extractUsername(token);
-            return extractedUsername.equals(username) && !isTokenExpired(token);
+            return extractUsername(token).equals(username) && !isTokenExpired(token);
         } catch (Exception e) {
             return false;
         }
     }
 
     public boolean isTokenExpired(String token) {
-        return getExpirationDateFromToken(token).before(new Date());
+        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
+    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
 
-    private Key getSigningKey() {
-        System.out.println(SECRET);
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        return resolver.apply(claims);
     }
 }
