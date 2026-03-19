@@ -3,7 +3,7 @@ import { apiClient } from "../services/apiClient";
 import * as React from "react";
 
 type Status = {
-    id: number;
+    statusId: number;
     name: string;
 };
 
@@ -33,7 +33,7 @@ export default function NewStatusForm({
 
         try {
             if (status) {
-                await apiClient.put(`/api/statuses/${status.id}`, {
+                await apiClient.put(`/api/statuses/${status.statusId}`, {
                     name: name.trim(),
                 });
             } else {

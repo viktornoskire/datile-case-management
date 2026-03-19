@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "../services/apiClient";
-import { NewStatusForm } from "../components";
+import { NewStatusForm, NewPriorityForm } from "../components";
 
 type Status = {
-    id: number;
+    statusId: number;
     name: string;
 };
 
 type Priority = {
-    id: number;
+    priorityId: number;
     name: string;
     color: string;
     bold: boolean;
@@ -19,6 +19,8 @@ export default function Settings() {
     const [priorities, setPriorities] = useState<Priority[]>([]);
     const [statusDrawerOpen, setStatusDrawerOpen] = useState(false);
     const [editingStatus, setEditingStatus] = useState<Status | null>(null);
+    const [priorityDrawerOpen, setPriorityDrawerOpen] = useState(false);
+    const [editingPriority, setEditingPriority] = useState<Priority | null>(null);
 
     useEffect(() => {
         apiClient.get<Status[]>("/api/statuses").then(setStatuses);
@@ -26,7 +28,7 @@ export default function Settings() {
 
     useEffect(() => {
         apiClient.get<Priority[]>("/api/priorities").then(setPriorities);
-    }, []);
+    }, [priorityDrawerOpen]);
 
     return (
         <div className="min-h-screen bg-stone-100 px-4 py-8 space-y-8">
@@ -59,7 +61,7 @@ export default function Settings() {
                     <ul className="divide-y divide-slate-200">
                         {statuses.map((status) => (
                             <li
-                                key={status.id}
+                                key={status.statusId}
                                 className="flex items-center justify-between px-6 py-4"
                             >
                                 <span className="font-medium text-slate-800">
@@ -94,6 +96,10 @@ export default function Settings() {
                     </div>
 
                     <button
+                        onClick={() => {
+                            setEditingPriority(null);
+                            setPriorityDrawerOpen(true);
+                        }}
                         className="rounded-full bg-[#0A1633] px-5 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
                     >
                         Ny prioritet
@@ -114,7 +120,7 @@ export default function Settings() {
                     <ul className="divide-y divide-slate-200">
                         {priorities.map((p) => (
                             <li
-                                key={p.id}
+                                key={p.priorityId}
                                 className="grid grid-cols-[2fr_1fr_1fr_120px] gap-4 items-center px-6 py-4"
                             >
                                 {/* NAME */}
@@ -147,6 +153,10 @@ export default function Settings() {
                                 {/* ACTION */}
                                 <div className="text-right">
                                     <button
+                                        onClick={() => {
+                                            setEditingPriority(p);
+                                            setPriorityDrawerOpen(true);
+                                        }}
                                         className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
                                     >
                                         Redigera
@@ -171,6 +181,22 @@ export default function Settings() {
                     <NewStatusForm
                         setDrawerOpen={setStatusDrawerOpen}
                         status={editingStatus}
+                    />
+                </div>
+            )}
+            {priorityDrawerOpen && (
+                <div className="fixed inset-0 z-40 flex">
+
+                    {/* BACKDROP */}
+                    <div
+                        onClick={() => setPriorityDrawerOpen(false)}
+                        className="flex-1 bg-black/30"
+                    />
+
+                    {/* DRAWER */}
+                    <NewPriorityForm
+                        setDrawerOpen={setPriorityDrawerOpen}
+                        priority={editingPriority}
                     />
                 </div>
             )}
