@@ -1,11 +1,11 @@
 package dev.datile.controller;
 
+import dev.datile.domain.Status;
 import dev.datile.dto.errands.StatusDto;
 import dev.datile.repository.StatusRepository;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,5 +27,47 @@ public class StatusController {
                         status.getName()
                 ))
                 .toList();
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createStatus(@RequestBody StatusDto dto) {
+        if (dto.name() == null || dto.name().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid name");
+        }
+
+        boolean exists = statusRepository.existsByNameIgnoreCase(dto.name());
+        if (exists) {
+            return ResponseEntity.status(409).body("Status already exists");
+        }
+
+        var status = new Status(null, dto.name());
+
+        Status s = statusRepository.save(status);
+
+        return ResponseEntity.status(201).body(
+                new StatusDto(s.getStatusId(), s.getName())
+        );
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id,
+                                          @RequestBody StatusDto dto) {
+
+        return statusRepository.findById(id)
+                .map(status -> {
+
+                    boolean exists = statusRepository.existsByNameIgnoreCase(dto.name());
+                    if (exists) {
+                        return ResponseEntity.status(409).body("Status already exists");
+                    }
+
+                    status.setName(dto.name().trim());
+                    statusRepository.save(status);
+
+                    return ResponseEntity.ok(
+                            new StatusDto(status.getStatusId(), status.getName())
+                    );
+                })
+                .orElseGet(() -> ResponseEntity.status(404).body("Status not found"));
     }
 }

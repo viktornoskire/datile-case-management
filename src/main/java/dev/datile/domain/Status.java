@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 public class Status {
     @Id
     @Column(name = "status_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long statusId;
 
     @Column(nullable = false)
@@ -32,5 +33,9 @@ public class Status {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

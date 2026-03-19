@@ -1,12 +1,12 @@
 CREATE TABLE statuses
 (
-    status_id BIGINT PRIMARY KEY,
+    status_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name      VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE priorities
 (
-    priority_id BIGINT PRIMARY KEY,
+    priority_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name        VARCHAR(100) NOT NULL,
     color       VARCHAR(20)  NOT NULL,
     is_default  BOOLEAN      NOT NULL DEFAULT FALSE
