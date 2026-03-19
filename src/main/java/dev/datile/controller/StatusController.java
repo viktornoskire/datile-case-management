@@ -55,12 +55,9 @@ public class StatusController {
 
         return statusRepository.findById(id)
                 .map(status -> {
-
-                    boolean exists = statusRepository.existsByNameIgnoreCase(dto.name());
-                    if (exists) {
-                        return ResponseEntity.status(409).body("Status already exists");
+                    if (dto.name() == null || dto.name().trim().isEmpty()) {
+                        return ResponseEntity.badRequest().body("Invalid name");
                     }
-
                     status.setName(dto.name().trim());
                     statusRepository.save(status);
 

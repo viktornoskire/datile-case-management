@@ -8,7 +8,7 @@ type Status = {
 };
 
 type Priority = {
-    id: number;
+    priorityId: number;
     name: string;
     color: string;
     isDefault: boolean;
@@ -120,7 +120,7 @@ export default function Settings() {
                     <ul className="divide-y divide-slate-200">
                         {priorities.map((p) => (
                             <li
-                                key={p.id}
+                                key={p.priorityId}
                                 className="grid grid-cols-[2fr_1fr_1fr_120px] gap-4 items-center px-6 py-4"
                             >
                                 {/* NAME */}

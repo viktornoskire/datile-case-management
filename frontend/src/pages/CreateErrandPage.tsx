@@ -218,7 +218,7 @@ export default function CreateErrandPage() {
 
             const defaultPriority =
                 loadedPriorities.find(
-                    (priority) => priority.name.trim().toLowerCase() === "normal",
+                    (priority) => priority.isDefault
                 );
 
             setValues((current) => ({

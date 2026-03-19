@@ -4,7 +4,7 @@ import * as React from "react";
 import {ApiError} from "../services/apiError.ts";
 
 type Priority = {
-    id: number;
+    priorityId: number;
     name: string;
     color: string;
     isDefault: boolean;
@@ -40,7 +40,7 @@ export default function NewPriorityForm({
 
         try {
             if (priority) {
-                await apiClient.put(`/api/priorities/${priority.id}`, {
+                await apiClient.put(`/api/priorities/${priority.priorityId}`, {
                     name: name.trim(),
                     color,
                     isDefault,
