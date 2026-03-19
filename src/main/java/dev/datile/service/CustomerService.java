@@ -5,11 +5,14 @@ import dev.datile.dto.customers.CreateCustomerRequestDto;
 import dev.datile.dto.customers.CustomerListItemDto;
 import dev.datile.dto.customers.CustomersResponseDto;
 import dev.datile.dto.customers.UpdateCustomerRequestDto;
+import dev.datile.dto.lookups.CustomerLookupDto;
 import dev.datile.repository.CustomerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class CustomerService {
@@ -59,7 +62,7 @@ public class CustomerService {
     public CustomerListItemDto updateCustomer(Long customerId, UpdateCustomerRequestDto request) {
         validateRequest(request.name(), request.customerNumber());
 
-        Customer customer = customerRepository.findById(customerId)
+        Customer customer = customerRepository.findByCustomerIdAndIsActiveTrue(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Kunden hittades inte."));
 
         String trimmedCustomerNumber = request.customerNumber().trim();
@@ -77,7 +80,7 @@ public class CustomerService {
     }
 
     public void deleteCustomer(Long customerId) {
-        Customer customer = customerRepository.findById(customerId)
+        Customer customer = customerRepository.findByCustomerIdAndIsActiveTrue(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Kunden hittades inte."));
 
         customer.deactivate();
@@ -100,5 +103,14 @@ public class CustomerService {
         if (customerNumber == null || customerNumber.trim().isEmpty()) {
             throw new IllegalArgumentException("Kundnummer måste fyllas i.");
         }
+    }
+    public List<CustomerLookupDto> getCustomerLookups() {
+        return customerRepository.findByIsActiveTrue(Sort.by("name").ascending())
+                .stream()
+                .map(customer -> new CustomerLookupDto(
+                        customer.getCustomerId(),
+                        customer.getName()
+                ))
+                .toList();
     }
 }

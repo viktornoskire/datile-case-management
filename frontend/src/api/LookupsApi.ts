@@ -40,8 +40,8 @@ export const fetchPriorities = async (): Promise<PriorityLookup[]> =>
 export const fetchAssignees = async (): Promise<AssigneeLookup[]> =>
     apiClient.get<AssigneeLookup[]>("/api/assignees");
 
-export const fetchCustomers = async (): Promise<CustomerLookup[]> =>
-    apiClient.get<CustomerLookup[]>("/api/customers");
+export const fetchCustomerLookups = async (): Promise<CustomerLookup[]> =>
+    apiClient.get<CustomerLookup[]>("/api/lookups/customers");
 
 export const fetchContacts = async (): Promise<ContactLookup[]> =>
     apiClient.get<ContactLookup[]>("/api/contacts");

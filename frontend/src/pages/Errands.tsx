@@ -160,7 +160,7 @@ export default function Errands() {
 
     return (
         <div className="min-h-screen bg-stone-100">
-            <div className="mx-auto max-w-[1600px] px-4 pb-8 pt-14 sm:px-6 sm:pb-10 sm:pt-10">
+            <div className="mx-auto max-w-7xl px-4 pb-28 pt-14 sm:px-6 sm:pt-10">
                 <div className="mb-4 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm backdrop-blur sm:mb-5 sm:p-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div className="space-y-0.5">

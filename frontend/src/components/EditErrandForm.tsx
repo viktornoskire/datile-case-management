@@ -8,7 +8,7 @@ import {
 import {
     fetchAssignees,
     fetchContacts,
-    fetchCustomers,
+    fetchCustomerLookups,
     fetchPriorities,
     fetchStatuses,
     type AssigneeLookup,
@@ -164,7 +164,7 @@ export const EditErrandForm = ({
                 fetchStatuses(),
                 fetchPriorities(),
                 fetchAssignees(),
-                fetchCustomers(),
+                fetchCustomerLookups(),
                 fetchContacts(),
             ]);
 

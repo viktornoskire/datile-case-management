@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {exportReportsCsv, fetchReports} from "../api/reportsApi";
 import {
     fetchAssignees,
-    fetchCustomers,
+    fetchCustomerLookups,
     fetchPriorities,
     fetchStatuses,
 } from "../api/LookupsApi";
@@ -63,7 +63,7 @@ export default function Reports() {
         const loadFilterOptions = async () => {
             try {
                 const [customers, assignees, statuses, priorities] = await Promise.all([
-                    fetchCustomers(),
+                    fetchCustomerLookups(),
                     fetchAssignees(),
                     fetchStatuses(),
                     fetchPriorities(),
@@ -201,8 +201,7 @@ export default function Reports() {
 
     return (
         <div className="min-h-screen bg-stone-100">
-            <div
-                className="mx-auto w-full max-w-[1600px] px-4 pb-8 pt-8 sm:px-6 sm:pb-10 sm:pt-10 lg:px-8 lg:pb-12 lg:pt-12">
+            <div className="mx-auto max-w-7xl px-4 pb-28 pt-14 sm:px-6 sm:pt-10">
                 <div
                     className="mb-4 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur sm:mb-5 sm:p-5 lg:rounded-3xl lg:p-6">
                     <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
