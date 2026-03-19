@@ -2,7 +2,7 @@ package dev.datile.dto.reports;
 
 import dev.datile.dto.errands.AssigneeDto;
 import dev.datile.dto.errands.ContactDto;
-import dev.datile.dto.errands.CustomerDto;
+import dev.datile.dto.customers.CustomerDto;
 import dev.datile.dto.errands.PriorityDto;
 import dev.datile.dto.errands.StatusDto;
 
@@ -22,5 +22,4 @@ public record ReportListItemDto(
         AssigneeDto assignee,
         List<ReportPurchaseDto> purchases,
         BigDecimal agreedPrice
-) {
-}
+) {}

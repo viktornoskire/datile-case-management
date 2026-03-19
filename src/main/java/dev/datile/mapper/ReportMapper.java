@@ -2,9 +2,9 @@ package dev.datile.mapper;
 
 import dev.datile.domain.Errand;
 import dev.datile.domain.Purchase;
+import dev.datile.dto.customers.CustomerDto;
 import dev.datile.dto.errands.AssigneeDto;
 import dev.datile.dto.errands.ContactDto;
-import dev.datile.dto.errands.CustomerDto;
 import dev.datile.dto.errands.PriorityDto;
 import dev.datile.dto.errands.StatusDto;
 import dev.datile.dto.reports.ReportListItemDto;
@@ -22,10 +22,6 @@ public class ReportMapper {
         List<ReportPurchaseDto> purchaseDtos = purchases.stream()
                 .map(this::toPurchaseDto)
                 .toList();
-
-        BigDecimal totalOutprice = purchases.stream()
-                .map(Purchase::getTotalSaleValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new ReportListItemDto(
                 errand.getErrandId(),
