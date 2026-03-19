@@ -94,7 +94,7 @@ public class ErrandMapper {
         return new CustomerDto(
                 c.getCustomerId(),
                 c.getName(),
-                c.getIsActive()
+                c.isActive()
         );
     }
 

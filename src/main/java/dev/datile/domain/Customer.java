@@ -18,12 +18,12 @@ public class Customer {
     private String customerNumber;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    private boolean isActive;
 
     protected Customer() {
     }
 
-    public Customer(String name, String customerNumber, Boolean isActive) {
+    public Customer(String name, String customerNumber, boolean isActive) {
         this.name = name;
         this.customerNumber = customerNumber;
         this.isActive = isActive;
@@ -41,7 +41,7 @@ public class Customer {
         return customerNumber;
     }
 
-    public Boolean getIsActive() {
+    public boolean isActive() {
         return isActive;
     }
 

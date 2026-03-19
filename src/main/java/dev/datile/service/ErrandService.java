@@ -87,6 +87,7 @@ public class ErrandService {
                 Math.max(filter.page() != null ? filter.page() : 0, 0),
                 normalizePageSize(filter.size()),
                 Sort.by(parseDirection(filter.sortDir()), mapSortField(filter.sortBy()))
+                        .and(Sort.by(Sort.Direction.ASC, "errandId"))
         );
 
         final Specification<Errand> spec = Specification
@@ -303,15 +304,20 @@ public class ErrandService {
             return "createdAt";
         }
 
-        return switch (sortBy.toLowerCase()) {
-            case "date" -> "createdAt";
-            case "title" -> "title";
-            case "timespent" -> "timeSpent";
-            default -> throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Invalid filter or sorting parameters"
-            );
-        };
+    return switch (sortBy.toLowerCase()) {
+        case "date" -> "createdAt";
+        case "title" -> "title";
+        case "timespent" -> "timeSpent";
+        case "customer" -> "customer.name";
+        case "contact" -> "contact.lastName";
+        case "status" -> "status.name";
+        case "priority" -> "priority.name";
+        case "assignee" -> "assignee.name";
+        default -> throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Invalid filter or sorting parameters"
+        );
+    };
     }
 
     private void validateStatuses(List<String> statuses) {

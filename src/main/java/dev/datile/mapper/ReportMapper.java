@@ -95,7 +95,7 @@ public class ReportMapper {
         return new CustomerDto(
                 errand.getCustomer().getCustomerId(),
                 errand.getCustomer().getName(),
-                errand.getCustomer().getIsActive()
+                errand.getCustomer().isActive()
         );
     }
 

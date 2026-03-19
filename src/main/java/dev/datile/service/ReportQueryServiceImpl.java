@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 /* Pulls and filters data */
 
 @Service
+@Transactional(readOnly = true)
 public class ReportQueryServiceImpl implements ReportQueryService {
 
     private static final Set<String> ALLOWED_SORTS = Set.of(

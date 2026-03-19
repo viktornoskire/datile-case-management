@@ -1,11 +1,11 @@
 package dev.datile.controller;
 
-import dev.datile.dto.errands.ContactDto;
-import dev.datile.repository.ContactRepository;
-import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import dev.datile.dto.contacts.ContactListItemDto;
+import dev.datile.dto.contacts.CreateContactRequestDto;
+import dev.datile.dto.contacts.UpdateContactRequestDto;
+import dev.datile.service.ContactService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -13,23 +13,33 @@ import java.util.List;
 @RequestMapping("/api/contacts")
 public class ContactController {
 
-    private final ContactRepository contactRepository;
+    private final ContactService contactService;
 
-    public ContactController(ContactRepository contactRepository) {
-        this.contactRepository = contactRepository;
+    public ContactController(ContactService contactService) {
+        this.contactService = contactService;
     }
 
     @GetMapping
-    public List<ContactDto> listContacts() {
-        return contactRepository.findAll(Sort.by("contactId")).stream()
-                .map(contact -> new ContactDto(
-                        contact.getContactId(),
-                        contact.getCustomer().getCustomerId(),
-                        contact.getFirstName(),
-                        contact.getLastName(),
-                        contact.getPhoneNumber(),
-                        contact.getMail()
-                ))
-                .toList();
+    public List<ContactListItemDto> listContacts() {
+        return contactService.listContacts();
+    }
+
+    @PostMapping
+    public ContactListItemDto createContact(@RequestBody CreateContactRequestDto request) {
+        return contactService.createContact(request);
+    }
+
+    @PutMapping("/{contactId}")
+    public ContactListItemDto updateContact(
+            @PathVariable Long contactId,
+            @RequestBody UpdateContactRequestDto request
+    ) {
+        return contactService.updateContact(contactId, request);
+    }
+
+    @DeleteMapping("/{contactId}")
+    public ResponseEntity<Void> deleteContact(@PathVariable Long contactId) {
+        contactService.deleteContact(contactId);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -27,15 +27,19 @@ public class Contact {
     @Column(length = 255)
     private String mail;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
+
     protected Contact() {
     }
 
-    public Contact(Customer customer, String firstName, String lastName, String phoneNumber, String mail) {
+    public Contact(Customer customer, String firstName, String lastName, String phoneNumber, String mail, boolean isActive) {
         this.customer = customer;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.mail = mail;
+        this.isActive = isActive;
     }
 
     public Long getContactId() {
@@ -64,5 +68,21 @@ public class Contact {
 
     public String getMail() {
         return mail;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void update(Customer customer, String firstName, String lastName, String phoneNumber, String mail) {
+        this.customer = customer;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.mail = mail;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
     }
 }
