@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "../services/apiClient";
+import { NewStatusForm } from "../components";
 
 type Status = {
     id: number;
@@ -16,9 +17,14 @@ type Priority = {
 export default function Settings() {
     const [statuses, setStatuses] = useState<Status[]>([]);
     const [priorities, setPriorities] = useState<Priority[]>([]);
+    const [statusDrawerOpen, setStatusDrawerOpen] = useState(false);
+    const [editingStatus, setEditingStatus] = useState<Status | null>(null);
 
     useEffect(() => {
         apiClient.get<Status[]>("/api/statuses").then(setStatuses);
+    }, [statusDrawerOpen]);
+
+    useEffect(() => {
         apiClient.get<Priority[]>("/api/priorities").then(setPriorities);
     }, []);
 
@@ -38,6 +44,10 @@ export default function Settings() {
                     </div>
 
                     <button
+                        onClick={() => {
+                            setEditingStatus(null);
+                            setStatusDrawerOpen(true);
+                        }}
                         className="rounded-full bg-[#0A1633] px-5 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
                     >
                         Ny status
@@ -57,6 +67,10 @@ export default function Settings() {
                                 </span>
 
                                 <button
+                                    onClick={() => {
+                                        setEditingStatus(status);
+                                        setStatusDrawerOpen(true);
+                                    }}
                                     className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
                                 >
                                     Redigera
@@ -144,6 +158,22 @@ export default function Settings() {
                     </ul>
                 </div>
             </div>
+            {statusDrawerOpen && (
+                <div className="fixed inset-0 z-40 flex">
+
+                    {/* BACKDROP */}
+                    <div
+                        onClick={() => setStatusDrawerOpen(false)}
+                        className="flex-1 bg-black/30"
+                    />
+
+                    {/* DRAWER */}
+                    <NewStatusForm
+                        setDrawerOpen={setStatusDrawerOpen}
+                        status={editingStatus}
+                    />
+                </div>
+            )}
         </div>
     );
 }
