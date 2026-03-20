@@ -119,87 +119,91 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
 
             {showNewContactForm && (
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div className="grid gap-3 md:grid-cols-2">
-                        <label className="flex flex-col gap-1 text-sm text-slate-700">
-                            Kund
-                            <select
-                                value={draft.customerId}
-                                onChange={(event) =>
-                                    setDraft((current) => ({
-                                        ...current,
-                                        customerId: event.target.value,
-                                    }))
-                                }
-                                className="rounded-xl border border-slate-300 px-3 py-2"
-                            >
-                                <option value="">Välj kund</option>
-                                {customers.map((customer) => (
-                                    <option key={customer.customerId} value={customer.customerId}>
-                                        {customer.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <div className="flex flex-col gap-4">
+                            <label className="flex flex-col gap-1 text-sm text-slate-700">
+                                Kund
+                                <select
+                                    value={draft.customerId}
+                                    onChange={(event) =>
+                                        setDraft((current) => ({
+                                            ...current,
+                                            customerId: event.target.value,
+                                        }))
+                                    }
+                                    className="rounded-xl border border-slate-300 px-3 py-2"
+                                >
+                                    <option value="">Välj kund</option>
+                                    {customers.map((customer) => (
+                                        <option key={customer.customerId} value={customer.customerId}>
+                                            {customer.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
 
-                        <label className="flex flex-col gap-1 text-sm text-slate-700">
-                            Förnamn
-                            <input
-                                type="text"
-                                value={draft.firstName}
-                                onChange={(event) =>
-                                    setDraft((current) => ({
-                                        ...current,
-                                        firstName: event.target.value,
-                                    }))
-                                }
-                                className="rounded-xl border border-slate-300 px-3 py-2"
-                            />
-                        </label>
+                            <label className="flex flex-col gap-1 text-sm text-slate-700">
+                                Telefon
+                                <input
+                                    type="text"
+                                    value={draft.phoneNumber}
+                                    onChange={(event) =>
+                                        setDraft((current) => ({
+                                            ...current,
+                                            phoneNumber: event.target.value,
+                                        }))
+                                    }
+                                    className="rounded-xl border border-slate-300 px-3 py-2"
+                                />
+                            </label>
+                        </div>
 
-                        <label className="flex flex-col gap-1 text-sm text-slate-700">
-                            Efternamn
-                            <input
-                                type="text"
-                                value={draft.lastName}
-                                onChange={(event) =>
-                                    setDraft((current) => ({
-                                        ...current,
-                                        lastName: event.target.value,
-                                    }))
-                                }
-                                className="rounded-xl border border-slate-300 px-3 py-2"
-                            />
-                        </label>
+                        <div className="flex flex-col gap-4">
+                            <label className="flex flex-col gap-1 text-sm text-slate-700">
+                                Förnamn
+                                <input
+                                    type="text"
+                                    value={draft.firstName}
+                                    onChange={(event) =>
+                                        setDraft((current) => ({
+                                            ...current,
+                                            firstName: event.target.value,
+                                        }))
+                                    }
+                                    className="rounded-xl border border-slate-300 px-3 py-2"
+                                />
+                            </label>
 
-                        <label className="flex flex-col gap-1 text-sm text-slate-700">
-                            Telefon
-                            <input
-                                type="text"
-                                value={draft.phoneNumber}
-                                onChange={(event) =>
-                                    setDraft((current) => ({
-                                        ...current,
-                                        phoneNumber: event.target.value,
-                                    }))
-                                }
-                                className="rounded-xl border border-slate-300 px-3 py-2"
-                            />
-                        </label>
+                            <label className="flex flex-col gap-1 text-sm text-slate-700">
+                                Efternamn
+                                <input
+                                    type="text"
+                                    value={draft.lastName}
+                                    onChange={(event) =>
+                                        setDraft((current) => ({
+                                            ...current,
+                                            lastName: event.target.value,
+                                        }))
+                                    }
+                                    className="rounded-xl border border-slate-300 px-3 py-2"
+                                />
+                            </label>
 
-                        <label className="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
-                            E-post
-                            <input
-                                type="email"
-                                value={draft.mail}
-                                onChange={(event) =>
-                                    setDraft((current) => ({
-                                        ...current,
-                                        mail: event.target.value,
-                                    }))
-                                }
-                                className="rounded-xl border border-slate-300 px-3 py-2"
-                            />
-                        </label>
+                            <label className="flex flex-col gap-1 text-sm text-slate-700">
+                                E-post
+                                <input
+                                    type="email"
+                                    value={draft.mail}
+                                    onChange={(event) =>
+                                        setDraft((current) => ({
+                                            ...current,
+                                            mail: event.target.value,
+                                        }))
+                                    }
+                                    className="rounded-xl border border-slate-300 px-3 py-2"
+                                />
+                            </label>
+                        </div>
                     </div>
 
                     <div className="mt-4 flex justify-end gap-3">
@@ -225,6 +229,7 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
                     </div>
                 </div>
             )}
+
             {loading && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
                     Laddar kontakter...
