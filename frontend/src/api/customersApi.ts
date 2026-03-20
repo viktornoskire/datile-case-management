@@ -9,7 +9,7 @@ export type CustomerListItem = {
 };
 
 export type CustomersResponse = {
-    content: CustomerListItem[];
+    items: CustomerListItem[];
     pageNumber: number;
     totalPages: number;
     totalElements: number;
