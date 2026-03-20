@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import {
     createCustomer,
     deleteCustomer,
@@ -7,9 +7,9 @@ import {
     type CustomerListItem,
     type CustomersResponse,
 } from "../api/customersApi";
-import { CustomerTable } from "../components/CustomerTable";
-import { NewCustomerForm } from "../components/NewCustomerForm";
-import type { CustomerDraft } from "../types/customers";
+import {CustomerTable} from "../components/CustomerTable";
+import {NewCustomerForm} from "../components/NewCustomerForm";
+import type {CustomerDraft} from "../types/customers";
 import Contacts from "../components/ContactsSection.tsx";
 
 const emptyDraft: CustomerDraft = {
@@ -24,6 +24,8 @@ export default function Customers() {
 
     const [page, setPage] = useState(0);
     const [pageSize] = useState(10);
+    const [query, setQuery] = useState("");
+    const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
     const [editingCustomerId, setEditingCustomerId] = useState<number | null>(null);
     const [draft, setDraft] = useState<CustomerDraft>(emptyDraft);
@@ -44,7 +46,8 @@ export default function Customers() {
                 page,
                 size: pageSize,
                 sortBy: "name",
-                sortDir: "asc",
+                sortDir,
+                q: query,
             });
 
             setData(response);
@@ -58,9 +61,9 @@ export default function Customers() {
 
     useEffect(() => {
         void loadCustomers();
-    }, [page]);
+    }, [page, query, sortDir]);
 
-    const customers = data?.content ?? [];
+    const customers = data?.items ?? [];
     const totalPages = data?.totalPages ?? 0;
 
     const startEdit = (customer: CustomerListItem) => {
@@ -163,7 +166,7 @@ export default function Customers() {
                     <div>
                         <h1 className="text-2xl font-semibold text-slate-900">Kunder</h1>
                         <p className="text-sm text-slate-500">
-                            Kunder med tillhörande företagskundnummer
+                            Kunder med tillhörande Fortnox kundnummer
                         </p>
                     </div>
 
@@ -173,6 +176,29 @@ export default function Customers() {
                         className="rounded-full bg-[#022B4F] px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
                     >
                         {showNewCustomerForm ? "Stäng" : "Ny kund"}
+                    </button>
+                </div>
+                <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(event) => {
+                            setQuery(event.target.value);
+                            setPage(0);
+                        }}
+                        placeholder="Sök kundnamn..."
+                        className="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm outline-none focus:border-[#99D0B6] focus:ring-2 focus:ring-[#99D0B6]/30"
+                    />
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+                            setPage(0);
+                        }}
+                        className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                        {sortDir === "asc" ? "Sortering: A–Ö" : "Sortering: Ö–A"}
                     </button>
                 </div>
 
@@ -223,7 +249,7 @@ export default function Customers() {
                 )}
 
                 {totalPages > 1 && !loading && (
-                    <div className="mt-6 flex items-center justify-between gap-3">
+                    <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
                         <button
                             type="button"
                             onClick={() => setPage((current) => Math.max(0, current - 1))}
@@ -233,17 +259,28 @@ export default function Customers() {
                             Föregående
                         </button>
 
-                        <p className="text-sm text-slate-600">
-                            Sida {page + 1} av {totalPages}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {Array.from({length: totalPages}, (_, index) => (
+                                <button
+                                    key={index}
+                                    type="button"
+                                    onClick={() => setPage(index)}
+                                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                                        page === index
+                                            ? "bg-[#022B4F] text-white"
+                                            : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                                    }`}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                        </div>
 
                         <button
                             type="button"
                             onClick={() =>
                                 setPage((current) =>
-                                    totalPages > 0
-                                        ? Math.min(totalPages - 1, current + 1)
-                                        : current,
+                                    totalPages > 0 ? Math.min(totalPages - 1, current + 1) : current,
                                 )
                             }
                             disabled={page >= totalPages - 1}
@@ -254,7 +291,7 @@ export default function Customers() {
                     </div>
                 )}
             </section>
-            <Contacts />
+            <Contacts customerQuery={query}/>
         </main>
     );
 }

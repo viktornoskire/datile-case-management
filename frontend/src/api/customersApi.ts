@@ -68,3 +68,12 @@ export const updateCustomer = async (
 export const deleteCustomer = async (customerId: number): Promise<void> => {
     return apiClient.delete<void>(`/api/customers/${customerId}`);
 };
+
+export type CustomerLookup = {
+    customerId: number;
+    name: string;
+};
+
+export const fetchCustomerLookups = async (): Promise<CustomerLookup[]> => {
+    return apiClient.get<CustomerLookup[]>("/api/lookups/customers");
+};

@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Page<Customer> findByIsActiveTrue(Pageable pageable);
+    Page<Customer> findByIsActiveTrueAndNameContainingIgnoreCase(String name, Pageable pageable);
     Optional<Customer> findByCustomerNumber(String customerNumber);
     Optional<Customer> findByCustomerIdAndIsActiveTrue(Long customerId);
     boolean existsByCustomerNumber(String customerNumber);

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { createContact, fetchContacts, type ContactListItem } from "../api/contactsApi";
-import { fetchCustomers, type CustomerListItem } from "../api/customersApi";
+import {useEffect, useState} from "react";
+import {createContact, fetchContacts, type ContactListItem} from "../api/contactsApi";
+import {fetchCustomerLookups, type CustomerLookup} from "../api/customersApi";
 
 type ContactDraft = {
     customerId: string;
@@ -18,9 +18,13 @@ const emptyDraft: ContactDraft = {
     mail: "",
 };
 
-export default function ContactsSection() {
+type ContactsSectionProps = {
+    customerQuery: string;
+};
+
+export default function ContactsSection({ customerQuery }: ContactsSectionProps) {
     const [contacts, setContacts] = useState<ContactListItem[]>([]);
-    const [customers, setCustomers] = useState<CustomerListItem[]>([]);
+    const [customers, setCustomers] = useState<CustomerLookup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -34,14 +38,8 @@ export default function ContactsSection() {
     };
 
     const loadCustomers = async () => {
-        const response = await fetchCustomers({
-            page: 0,
-            size: 100,
-            sortBy: "name",
-            sortDir: "asc",
-        });
-
-        setCustomers(response.content ?? []);
+        const response = await fetchCustomerLookups();
+        setCustomers(response);
     };
 
     const loadData = async () => {
@@ -91,6 +89,15 @@ export default function ContactsSection() {
         }
     };
 
+    const normalizedCustomerQuery = customerQuery.trim().toLowerCase();
+
+    const filteredContacts =
+        normalizedCustomerQuery.length === 0
+            ? contacts
+            : contacts.filter((contact) =>
+                (contact.customerName ?? "").toLowerCase().includes(normalizedCustomerQuery),
+            );
+
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -111,8 +118,8 @@ export default function ContactsSection() {
             </div>
 
             {showNewContactForm && (
-                <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="grid gap-3 md:grid-cols-2">
                         <label className="flex flex-col gap-1 text-sm text-slate-700">
                             Kund
                             <select
@@ -218,7 +225,6 @@ export default function ContactsSection() {
                     </div>
                 </div>
             )}
-
             {loading && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
                     Laddar kontakter...
@@ -231,13 +237,13 @@ export default function ContactsSection() {
                 </div>
             )}
 
-            {!loading && !error && contacts.length === 0 && (
+            {!loading && !error && filteredContacts.length === 0 && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
                     Inga kontakter hittades.
                 </div>
             )}
 
-            {!loading && !error && contacts.length > 0 && (
+            {!loading && !error && filteredContacts.length > 0 && (
                 <div className="overflow-x-auto rounded-xl border border-slate-200">
                     <table className="min-w-full divide-y divide-slate-200">
                         <thead className="bg-slate-50">
@@ -258,7 +264,7 @@ export default function ContactsSection() {
                         </thead>
 
                         <tbody className="divide-y divide-slate-200 bg-white">
-                        {contacts.map((contact) => (
+                        {filteredContacts.map((contact) => (
                             <tr key={contact.contactId} className="hover:bg-slate-50">
                                 <td className="px-4 py-3 text-sm text-slate-900">
                                     {contact.firstName} {contact.lastName}

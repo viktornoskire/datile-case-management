@@ -30,7 +30,7 @@ export function CustomerTable({
                               }: CustomerTableProps) {
     return (
         <div className="overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-y-2">
+            <table className="min-w-full border-separate border-spacing-y-1.5">
                 <thead>
                 <tr className="text-left text-sm text-slate-500">
                     <th className="px-4 py-2 font-medium">Kund</th>

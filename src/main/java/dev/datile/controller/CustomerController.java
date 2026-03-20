@@ -22,10 +22,11 @@ public class CustomerController {
     public CustomersResponseDto listCustomers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String q,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir
     ) {
-        return customerService.listCustomers(page, size, sortBy, sortDir);
+        return customerService.listCustomers(page, size, q, sortBy, sortDir);
     }
 
     @PostMapping

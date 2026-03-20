@@ -23,14 +23,29 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    public CustomersResponseDto listCustomers(int page, int size, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
+    public CustomersResponseDto listCustomers(int page, int size, String q, String sortBy, String sortDir) {
+        String safeSortBy = switch (sortBy) {
+            case "name" -> "name";
+            case "customerNumber" -> "customerNumber";
+            default -> "name";
+        };
 
-        Page<Customer> customerPage = customerRepository.findByIsActiveTrue(
-                PageRequest.of(page, size, sort)
-        );
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(safeSortBy).descending()
+                : Sort.by(safeSortBy).ascending();
+
+        PageRequest pageRequest = PageRequest.of(page, size, sort);
+
+        Page<Customer> customerPage;
+
+        if (q != null && !q.trim().isEmpty()) {
+            customerPage = customerRepository
+                    .findByIsActiveTrueAndNameContainingIgnoreCase(q.trim(), pageRequest);
+        } else {
+            customerPage = customerRepository.findByIsActiveTrue(
+                    PageRequest.of(page, size, sort)
+            );
+        }
 
         return new CustomersResponseDto(
                 customerPage.getContent().stream()
