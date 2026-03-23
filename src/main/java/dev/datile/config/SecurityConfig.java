@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -49,9 +50,28 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
-                        .requestMatchers("/api/errands/**").authenticated()
-                        .requestMatchers("/api/purchases/**").authenticated()
-                        .requestMatchers("/api/customers/**").authenticated()
+
+                        // Admin routes
+                          // Customers
+                        .requestMatchers(HttpMethod.POST, "/api/customers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/customers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasRole("ADMIN")
+                          // Users
+                        .requestMatchers(HttpMethod.POST, "/api/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
+                          // Assignees
+                        .requestMatchers(HttpMethod.POST, "/api/assignees/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/assignees/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/assignees/**").hasRole("ADMIN")
+                          // Statuses
+                        .requestMatchers(HttpMethod.POST, "/api/statuses/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/statuses/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/statuses/**").hasRole("ADMIN")
+                          // Priorities
+                        .requestMatchers(HttpMethod.POST, "/api/priorities/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/priorities/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/priorities/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
