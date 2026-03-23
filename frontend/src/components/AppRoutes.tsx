@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Errands, Reports, Customers, Users, Settings, PingPage, Login, CreateErrandPage} from "../pages";
+import { Errands, Reports, Customers, Users, Settings, PingPage, Login, CreateErrandPage, Purchases} from "../pages";
 import { ProtectedRoutes } from "./ProtectedRoutes.tsx";
 
 export default function AppRoutes() {
@@ -13,7 +13,7 @@ export default function AppRoutes() {
                 <Route path="/errands/new" element={<CreateErrandPage />} />
                 <Route path="/reports" element={<Reports/>} />
                 <Route path="/customers" element={<Customers/>} />
-                <Route path="/purchases" element={<Navigate to="/errands"/>}/>
+                <Route path="/purchases" element={<Purchases/>}/>
                 <Route path="/users" element={<Users/>} />
                 <Route path="/settings" element={<Settings/>} />
             </Route>

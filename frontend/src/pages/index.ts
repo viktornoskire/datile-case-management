@@ -6,3 +6,4 @@ export { default as Settings } from './Settings';
 export { default as PingPage } from './PingPage';
 export { default as Login } from './Login';
 export { default as CreateErrandPage } from './CreateErrandPage';
+export { default as Purchases } from './Purchases'
