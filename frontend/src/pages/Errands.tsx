@@ -19,14 +19,21 @@ export default function Errands() {
     const [data, setData] = useState<ErrandsResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
     const [view, setView] = useState<"cards" | "list">("cards");
     const [selectedErrandId, setSelectedErrandId] = useState<number | null>(null);
     const [modalMode, setModalMode] = useState<"view" | "edit">("view");
+
     const [filters, setFilters] = useState<ErrandFilters>(initialErrandFilters);
     const [debouncedQ, setDebouncedQ] = useState(filters.q);
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+
+    const [page, setPage] = useState(0);
+    const size = 20;
+
     const navigate = useNavigate();
 
+    const totalPages = data?.totalPages ?? 0;
 
     const openModal = (errandId: number) => {
         setModalMode("view");
@@ -68,6 +75,37 @@ export default function Errands() {
         });
     };
 
+    const getVisiblePages = (): (number | "...")[] => {
+        const pages: (number | "...")[] = [];
+        const total = totalPages;
+        const current = page;
+
+        if (total <= 7) {
+            return Array.from({ length: total }, (_, i) => i);
+        }
+
+        pages.push(0);
+
+        if (current > 3) {
+            pages.push("...");
+        }
+
+        const start = Math.max(1, current - 1);
+        const end = Math.min(total - 2, current + 1);
+
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+
+        if (current < total - 3) {
+            pages.push("...");
+        }
+
+        pages.push(total - 1);
+
+        return pages;
+    };
+
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             setDebouncedQ(filters.q);
@@ -75,6 +113,17 @@ export default function Errands() {
 
         return () => window.clearTimeout(timeoutId);
     }, [filters.q]);
+
+    useEffect(() => {
+        setPage(0);
+    }, [
+        filters.sortBy,
+        filters.statuses,
+        filters.priorities,
+        filters.assigneeId,
+        filters.customerId,
+        debouncedQ,
+    ]);
 
     useEffect(() => {
         let alive = true;
@@ -85,8 +134,8 @@ export default function Errands() {
                 setError(null);
 
                 const res = await fetchErrands({
-                    page: 0,
-                    size: 20,
+                    page,
+                    size,
                     sortBy: filters.sortBy,
                     sortDir: "desc",
                     ...buildErrandFilterParams({
@@ -114,6 +163,7 @@ export default function Errands() {
             alive = false;
         };
     }, [
+        page,
         filters.sortBy,
         filters.statuses,
         filters.priorities,
@@ -255,7 +305,7 @@ export default function Errands() {
 
                 <div className="mb-4 flex items-center justify-between">
                     <p className="text-sm text-slate-500">
-                        {data.errands.length} {data.errands.length === 1 ? "ärende" : "ärenden"}
+                        {data.totalElements} {data.totalElements === 1 ? "ärende" : "ärenden"}
                     </p>
                 </div>
 
@@ -314,6 +364,56 @@ export default function Errands() {
                                 </li>
                             ))}
                         </ul>
+                    </div>
+                )}
+
+                {totalPages > 1 && (
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setPage((current) => Math.max(0, current - 1))}
+                            disabled={page === 0}
+                            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            Föregående
+                        </button>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            {getVisiblePages().map((item: number | "...", index: number) =>
+                                item === "..." ? (
+                                    <span
+                                        key={`dots-${index}`}
+                                        className="px-2 text-slate-500"
+                                    >
+                                        ...
+                                    </span>
+                                ) : (
+                                    <button
+                                        key={item}
+                                        type="button"
+                                        onClick={() => setPage(item)}
+                                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                                            page === item
+                                                ? "bg-[#022B4F] text-white"
+                                                : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                                        }`}
+                                    >
+                                        {item + 1}
+                                    </button>
+                                )
+                            )}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setPage((current) => Math.min(totalPages - 1, current + 1))
+                            }
+                            disabled={page >= totalPages - 1}
+                            className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            Nästa
+                        </button>
                     </div>
                 )}
 
