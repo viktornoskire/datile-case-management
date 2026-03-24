@@ -61,6 +61,8 @@ export default function NewPriorityForm({
                     setError("Prioritet finns redan...");
                 } else if (err.status === 400) {
                     setError("Ogiltigt namn...");
+                } else if (err.status === 403) {
+                    setError("Du har inte rätt behörigheter...")
                 } else {
                     setError("Serverfel...");
                 }

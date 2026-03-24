@@ -35,10 +35,17 @@ public class AssigneeController {
     @PostMapping
     public ResponseEntity<?> createAssignee(@RequestBody AssigneeDto dto) {
 
+        if (dto.name() == null || dto.name().trim().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid name"
+            );
+        }
+
         if (assigneeRepository.existsByNameIgnoreCase(dto.name())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Ansvarig finns redan"
+                    "Assignee already exists"
             );
         }
 
@@ -55,6 +62,13 @@ public class AssigneeController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAssignee(@PathVariable Long id, @RequestBody AssigneeDto dto) {
 
+        if (dto.name() == null || dto.name().trim().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid name"
+            );
+        }
+
         var assignee = assigneeRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -66,7 +80,7 @@ public class AssigneeController {
 
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Ansvarig finns redan"
+                    "Assignee already exists"
             );
         }
 

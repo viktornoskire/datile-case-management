@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiClient } from "../services/apiClient";
 import type { Assignee } from "../types/users";
 import * as React from "react";
+import {ApiError} from "../services/apiError.ts";
 
 export default function NewAssigneeForm({
                                             setDrawerOpen,
@@ -46,8 +47,18 @@ export default function NewAssigneeForm({
 
         } catch (error: unknown) {
 
-            if (error instanceof Error) {
-                setError("Ansvarig finns redan...");
+            if (error instanceof ApiError) {
+                if (error.status === 409) {
+                    setError("Ansvarig finns redan...");
+                } else if (error.status === 400) {
+                    setError("Ogiltigt namn...");
+                } else if (error.status === 403) {
+                    setError("Du har inte rätt behörigheter...")
+                } else if (error.status === 404) {
+                    setError("Kunde inte hitta ansvarig...")
+                } else {
+                    setError("Serverfel...");
+                }
             } else {
                 setError("Något gick fel...");
             }
