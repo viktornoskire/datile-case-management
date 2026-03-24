@@ -97,6 +97,40 @@ public class UserControllerTest {
     }
 
     @Test
+    void post_user_with_role_user_should_return_401() throws Exception {
+        String loginBody = """
+                {
+                    "email": "viktor@gmail.com",
+                    "password": "password"
+                }
+                """;
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("jwt"))
+                .andReturn();
+
+        Cookie temporaryCookie = result.getResponse().getCookie("jwt");
+
+        String postBody = """
+                {
+                    "name": "johan",
+                    "email": "johan@gmail.com",
+                    "password": "password",
+                    "role": "ADMIN"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(postBody)
+                        .cookie(temporaryCookie))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void post_existing_user_should_return_409() throws Exception {
         String body = """
                 {

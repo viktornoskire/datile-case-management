@@ -55,7 +55,8 @@ public class AuthControllerTest {
         mockMvc.perform(get("/api/auth/me")
                         .cookie(jwtCookie))
                 .andExpect(status().isOk())
-                .andExpect(content().string("{\"email\":\"ronja@gmail.com\"}"));
+                .andExpect(jsonPath("$.email").value("ronja@gmail.com"))
+                .andExpect(jsonPath("$.role").value("USER"));
     }
 
     @Test
