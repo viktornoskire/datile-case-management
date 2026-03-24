@@ -1,0 +1,3 @@
+CREATE DATABASE IF NOT EXISTS datile_test;
+GRANT ALL PRIVILEGES ON datile_test.* TO 'app'@'%';
+FLUSH PRIVILEGES;
