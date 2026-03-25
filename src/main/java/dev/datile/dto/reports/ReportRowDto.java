@@ -14,5 +14,5 @@ public record ReportRowDto(
         String priority,
         BigDecimal timeSpent,
         BigDecimal agreedPrice,
-        BigDecimal purchaseTotal
+        BigDecimal customerPurchaseTotal
 ) {}

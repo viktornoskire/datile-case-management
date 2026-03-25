@@ -6,6 +6,7 @@ public record ReportPurchaseDto(
         Long purchaseId,
         String itemName,
         Integer quantity,
-        BigDecimal salePrice
+        BigDecimal salePrice,
+        BigDecimal totalSaleValue
 ) {
 }

@@ -39,7 +39,7 @@ public class ReportMapper {
     }
 
     public ReportRowDto toReportRowDto(Errand errand, List<Purchase> purchases) {
-        BigDecimal purchaseTotal = purchases.stream()
+        BigDecimal customerPurchaseTotal = purchases.stream()
                 .map(Purchase::getTotalSaleValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -74,7 +74,7 @@ public class ReportMapper {
                 priority,
                 errand.getTimeSpent(),
                 errand.getAgreedPrice(),
-                purchaseTotal
+                customerPurchaseTotal
         );
     }
 
@@ -83,7 +83,8 @@ public class ReportMapper {
                 purchase.getPurchaseId(),
                 purchase.getItemName(),
                 purchase.getQuantity(),
-                purchase.getSalePrice()
+                purchase.getSalePrice(),
+                purchase.getTotalSaleValue()
         );
     }
 

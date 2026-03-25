@@ -4,7 +4,6 @@ services:
     container_name: datile-mysql
     restart: unless-stopped
 
-
     env_file:
       - .env
 
@@ -13,6 +12,7 @@ services:
 
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
 
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p$${MYSQL_ROOT_PASSWORD} --silent"]
@@ -20,6 +20,33 @@ services:
       timeout: 3s
       retries: 20
       start_period: 10s
+
+  backend:
+    build:
+      context: .
+    container_name: datile-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: datile-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
 
 volumes:
   mysql_data:

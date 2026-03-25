@@ -24,19 +24,20 @@ public class ReportExportServiceImpl implements ReportExportService {
 
         StringBuilder csv = new StringBuilder();
         csv.append('\uFEFF');
-        csv.append("Ärende-ID;Titel;Kund;Kontakt;Status;Prioritet;Ansvarig;Tidsåtgång;Datum;Överenskommet pris\n");
+        csv.append("Ärende-ID;Kund;Titel;Kontakt;Status;Prioritet;Ansvarig;Tidsåtgång;Datum;Överenskommet pris;Inköp i ärendet;\n");
 
         for (ReportRowDto row : rows) {
             csv.append(csvValue(row.errandId())).append(";");
-            csv.append(csvValue(row.title())).append(";");
             csv.append(csvValue(row.customerName())).append(";");
+            csv.append(csvValue(row.title())).append(";");
             csv.append(csvValue(row.contactName())).append(";");
             csv.append(csvValue(row.status())).append(";");
             csv.append(csvValue(row.priority())).append(";");
             csv.append(csvValue(row.assigneeName())).append(";");
             csv.append(csvValue(row.timeSpent())).append(";");
             csv.append(csvValue(row.createdAt())).append(";");
-            csv.append(csvValue(row.agreedPrice())).append("\n");
+            csv.append(csvValue(row.agreedPrice())).append(";");
+            csv.append(csvValue(row.customerPurchaseTotal())).append("\n");
         }
 
         return csv.toString().getBytes(StandardCharsets.UTF_8);
