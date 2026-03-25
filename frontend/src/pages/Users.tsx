@@ -1,7 +1,8 @@
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import type {Permissions, Role, User, Assignee} from "../types/users";
 import {NewUserForm, NewAssigneeForm} from "../components";
 import {apiClient} from "../services/apiClient.ts";
+import {AuthContext} from "../components/AuthProvider.tsx";
 
 const rolePermissions: Record<Role, Permissions> = {
     ADMIN: {
@@ -78,6 +79,18 @@ export default function Users() {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     }
 
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+    const authContext = useContext(AuthContext);
+
+    useEffect(() => {
+        if (authContext?.role === "ADMIN") {
+            setIsAdmin(true);
+        } else {
+            setIsAdmin(false);
+        }
+    }, []);
+
     return (
         <div className="min-h-screen bg-stone-100 relative">
 
@@ -96,15 +109,17 @@ export default function Users() {
                         </p>
                     </div>
 
-                    <button
-                        onClick={() => {
-                            setEditingUser(null);
-                            setDrawerOpen(true);
-                        }}
-                        className="rounded-full bg-[#0A1633] px-6 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
-                    >
-                        Ny användare
-                    </button>
+                    {isAdmin && (
+                        <button
+                            onClick={() => {
+                                setEditingUser(null);
+                                setDrawerOpen(true);
+                            }}
+                            className="rounded-full bg-[#0A1633] px-6 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
+                        >
+                            Ny användare
+                        </button>
+                    )}
                 </div>
 
                 {/* DESKTOP TABLE */}
@@ -156,15 +171,17 @@ export default function Users() {
                                         <Check value={permissions.settings}/>
 
                                         <div className="text-right">
-                                            <button
-                                                onClick={() => {
-                                                    setEditingUser(user);
-                                                    setDrawerOpen(true);
-                                                }}
-                                                className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
-                                            >
-                                                Redigera
-                                            </button>
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingUser(user);
+                                                        setDrawerOpen(true);
+                                                    }}
+                                                    className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
+                                                >
+                                                    Redigera
+                                                </button>
+                                            )}
                                         </div>
                                     </li>
                                 );
@@ -232,10 +249,12 @@ export default function Users() {
                                         </div>
 
                                     </div>
+                                    {isAdmin && (
+                                        <button className="mt-4 w-full rounded-full border py-2 text-sm">
+                                            Redigera
+                                        </button>
+                                    )}
 
-                                    <button className="mt-4 w-full rounded-full border py-2 text-sm">
-                                        Redigera
-                                    </button>
                                 </div>
                             );
                         })
@@ -257,15 +276,17 @@ export default function Users() {
                             </p>
                         </div>
 
-                        <button
-                            onClick={() => {
-                                setEditingAssignee(null);
-                                setAssigneeDrawerOpen(true);
-                            }}
-                            className="rounded-full bg-[#0A1633] px-5 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
-                        >
-                            Ny ansvarig
-                        </button>
+                        {isAdmin && (
+                            <button
+                                onClick={() => {
+                                    setEditingAssignee(null);
+                                    setAssigneeDrawerOpen(true);
+                                }}
+                                className="rounded-full bg-[#0A1633] px-5 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
+                            >
+                                Ny ansvarig
+                            </button>
+                        )}
                     </div>
 
                     <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
@@ -285,15 +306,17 @@ export default function Users() {
                             {capitalizeFirstLetter(assignee.name)}
                         </span>
 
-                                        <button
-                                            onClick={() => {
-                                                setEditingAssignee(assignee);
-                                                setAssigneeDrawerOpen(true);
-                                            }}
-                                            className="rounded-full border px-3 py-1 text-sm hover:bg-slate-100"
-                                        >
-                                            Redigera
-                                        </button>
+                                        {isAdmin && (
+                                            <button
+                                                onClick={() => {
+                                                    setEditingAssignee(assignee);
+                                                    setAssigneeDrawerOpen(true);
+                                                }}
+                                                className="rounded-full border px-3 py-1 text-sm hover:bg-slate-100"
+                                            >
+                                                Redigera
+                                            </button>
+                                        )}
                                     </li>
                                 ))
                             )}

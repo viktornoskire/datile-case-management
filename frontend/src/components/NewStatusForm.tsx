@@ -51,6 +51,8 @@ export default function NewStatusForm({
                     setError("Status finns redan...");
                 } else if (err.status === 400) {
                     setError("Ogiltigt namn...");
+                } else if (err.status === 403) {
+                    setError("Du har inte rätt till detta...")
                 } else {
                     setError("Serverfel...");
                 }

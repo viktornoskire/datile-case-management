@@ -36,7 +36,10 @@ public class AssigneeController {
     public ResponseEntity<?> createAssignee(@RequestBody AssigneeDto dto) {
 
         if (dto.name() == null || dto.name().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid name");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid name"
+            );
         }
 
         if (assigneeRepository.existsByNameIgnoreCaseAndIsActiveTrue(dto.name())) {
@@ -55,13 +58,15 @@ public class AssigneeController {
     public ResponseEntity<?> updateAssignee(@PathVariable Long id,
                                             @RequestBody AssigneeDto dto) {
 
+        if (dto.name() == null || dto.name().trim().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid name"
+            );
+        }
+
         return assigneeRepository.findById(id)
                 .map(assignee -> {
-
-                    if (dto.name() == null || dto.name().trim().isEmpty()) {
-                        return ResponseEntity.badRequest().body("Invalid name");
-                    }
-
                     if (assigneeRepository.existsByNameIgnoreCaseAndIsActiveTrue(dto.name())
                             && !assignee.getName().equalsIgnoreCase(dto.name())) {
                         return ResponseEntity.status(409).body("Assignee already exists");

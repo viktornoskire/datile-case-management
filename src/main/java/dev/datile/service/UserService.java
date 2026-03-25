@@ -55,6 +55,10 @@ public class UserService {
         existingUser.setEmail(user.email());
         existingUser.setRole(user.role());
 
+        if (user.password() != null && !user.password().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(user.password()));
+        }
+
         return userRepository.save(existingUser);
     }
 

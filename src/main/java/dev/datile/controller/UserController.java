@@ -34,12 +34,20 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody NewUserDto user) {
 
+        if (user.name() == null || user.name().trim().isEmpty() || user.email() == null || user.email().trim().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid name"
+            );
+        }
+
         if (userService.userExists(user.email())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Användare finns redan"
+                    "User already exists"
             );
         }
+
 
         User u = userService.saveUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("user", new UserResponse(u.getId(), u.getName(), u.getEmail(), u.getRole())));
@@ -48,6 +56,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody NewUserDto user) {
+
         User updated = userService.updateUser(id, user);
         return ResponseEntity.ok(Map.of(
                 "user",
@@ -88,7 +97,7 @@ public class UserController {
         CharacterRule splCharRule = new CharacterRule(specialChars);
         splCharRule.setNumberOfCharacters(2);
 
-        String password = gen.generatePassword(16, splCharRule, lowerCaseRule,
+        String password = gen.generatePassword(26, splCharRule, lowerCaseRule,
                 upperCaseRule, digitRule);
 
         return Map.of("password", password);

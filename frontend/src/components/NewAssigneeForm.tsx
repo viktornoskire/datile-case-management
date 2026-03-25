@@ -45,14 +45,16 @@ export default function NewAssigneeForm({
 
             setDrawerOpen(false);
 
-        } catch (err: unknown) {
-            if (err instanceof ApiError) {
-                if (err.status === 409) {
+        } catch (error: unknown) {
+            if (error instanceof ApiError) {
+                if (error.status === 409) {
                     setError("Ansvarig finns redan...");
-                } else if (err.status === 400) {
+                } else if (error.status === 400) {
                     setError("Ogiltigt namn...");
-                } else if (err.status === 404) {
-                    setError("Ansvarig hittades inte...");
+                } else if (error.status === 403) {
+                    setError("Du har inte rätt behörigheter...")
+                } else if (error.status === 404) {
+                    setError("Kunde inte hitta ansvarig...")
                 } else {
                     setError("Serverfel...");
                 }

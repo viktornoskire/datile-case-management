@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Role } from "../types/users.ts";
 import { apiClient } from "../services/apiClient.ts";
 import * as React from "react";
+import {ApiError} from "../services/apiError.ts";
 
 type Password = {
     password: string;
@@ -41,6 +42,11 @@ export default function NewUserForm({ setDrawerOpen, user }: Props) {
             return;
         }
 
+        if (password.trim().length < 26) {
+            setError("Lösenord måste vara minst 26 tecken...");
+            return;
+        }
+
         setError(null);
 
         try {
@@ -49,6 +55,7 @@ export default function NewUserForm({ setDrawerOpen, user }: Props) {
                     name: name.trim().toLowerCase().replace(/\s+/g, ""),
                     email: email.trim().toLowerCase().replace(/\s+/g, ""),
                     role: selectedRole,
+                    password: password.trim() !== "" ? password.trim() : null,
                 });
             } else {
                 await apiClient.post<User>("/api/users", {
@@ -61,14 +68,20 @@ export default function NewUserForm({ setDrawerOpen, user }: Props) {
 
             setDrawerOpen(false);
 
-        } catch (error: unknown) {
-
-            if (error instanceof Error) {
-                setError("Användare finns redan...");
+        } catch (err: unknown) {
+            if (err instanceof ApiError) {
+                if (err.status === 409) {
+                    setError("Användare finns redan...");
+                } else if (err.status === 400) {
+                    setError("Ogiltigt namn...");
+                } else if (err.status === 403) {
+                    setError("Du har inte rätt behörigheter...")
+                } else {
+                    setError("Serverfel...");
+                }
             } else {
                 setError("Något gick fel...");
             }
-
         }
     }
 

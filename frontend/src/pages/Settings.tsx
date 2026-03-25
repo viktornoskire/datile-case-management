@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import {useContext, useEffect, useState} from "react";
 import { apiClient } from "../services/apiClient";
 import { NewStatusForm, NewPriorityForm } from "../components";
+import {AuthContext} from "../components/AuthProvider.tsx";
 
 type Status = {
     statusId: number;
@@ -68,6 +69,18 @@ export default function Settings() {
         loadPriorities();
     }, [priorityDrawerOpen]);
 
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+    const authContext = useContext(AuthContext);
+
+    useEffect(() => {
+        if (authContext?.role === "ADMIN") {
+            setIsAdmin(true);
+        } else {
+            setIsAdmin(false);
+        }
+    }, []);
+
     return (
         <div className="min-h-screen bg-stone-100 px-4 py-8 space-y-8">
 
@@ -82,15 +95,19 @@ export default function Settings() {
                         </p>
                     </div>
 
-                    <button
-                        onClick={() => {
-                            setEditingStatus(null);
-                            setStatusDrawerOpen(true);
-                        }}
-                        className="rounded-full bg-[#0A1633] px-5 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
-                    >
-                        Ny status
-                    </button>
+
+                    {isAdmin && (
+                        <button
+                            onClick={() => {
+                                setEditingStatus(null);
+                                setStatusDrawerOpen(true);
+                            }}
+                            className="rounded-full bg-[#0A1633] px-5 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
+                        >
+                            Ny status
+                        </button>
+                    )}
+
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -117,15 +134,17 @@ export default function Settings() {
                                         {status.name}
                                     </span>
 
-                                    <button
-                                        onClick={() => {
-                                            setEditingStatus(status);
-                                            setStatusDrawerOpen(true);
-                                        }}
-                                        className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
-                                    >
-                                        Redigera
-                                    </button>
+                                    {isAdmin && (
+                                        <button
+                                            onClick={() => {
+                                                setEditingStatus(status);
+                                                setStatusDrawerOpen(true);
+                                            }}
+                                            className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
+                                        >
+                                            Redigera
+                                        </button>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -144,15 +163,17 @@ export default function Settings() {
                         </p>
                     </div>
 
-                    <button
-                        onClick={() => {
-                            setEditingPriority(null);
-                            setPriorityDrawerOpen(true);
-                        }}
-                        className="rounded-full bg-[#0A1633] px-5 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
-                    >
-                        Ny prioritet
-                    </button>
+                    {isAdmin && (
+                        <button
+                            onClick={() => {
+                                setEditingPriority(null);
+                                setPriorityDrawerOpen(true);
+                            }}
+                            className="rounded-full bg-[#0A1633] px-5 py-2 text-sm font-semibold text-white hover:bg-[#13224A]"
+                        >
+                            Ny prioritet
+                        </button>
+                    )}
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -205,15 +226,17 @@ export default function Settings() {
                                         </div>
 
                                         <div className="text-right">
-                                            <button
-                                                onClick={() => {
-                                                    setEditingPriority(p);
-                                                    setPriorityDrawerOpen(true);
-                                                }}
-                                                className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
-                                            >
-                                                Redigera
-                                            </button>
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingPriority(p);
+                                                        setPriorityDrawerOpen(true);
+                                                    }}
+                                                    className="rounded-full border px-4 py-1.5 text-sm hover:bg-slate-100"
+                                                >
+                                                    Redigera
+                                                </button>
+                                            )}
                                         </div>
                                     </li>
                                 ))}

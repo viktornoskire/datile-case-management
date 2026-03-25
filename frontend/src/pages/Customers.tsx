@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {
     createCustomer,
     deleteCustomer,
@@ -11,6 +11,7 @@ import {CustomerTable} from "../components/CustomerTable";
 import {NewCustomerForm} from "../components/NewCustomerForm";
 import type {CustomerDraft} from "../types/customers";
 import Contacts from "../components/ContactsSection.tsx";
+import {AuthContext} from "../components/AuthProvider.tsx";
 
 const emptyDraft: CustomerDraft = {
     name: "",
@@ -163,6 +164,18 @@ export default function Customers() {
         }
     };
 
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+    const authContext = useContext(AuthContext);
+
+    useEffect(() => {
+        if (authContext?.role === "ADMIN") {
+            setIsAdmin(true);
+        } else {
+            setIsAdmin(false);
+        }
+    }, []);
+
     const getVisiblePages = (): (number | "...")[] => {
         const pages: (number | "...")[] = [];
 
@@ -211,13 +224,16 @@ export default function Customers() {
                         </p>
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={() => setShowNewCustomerForm((prev) => !prev)}
-                        className="rounded-full bg-[#022B4F] px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-                    >
-                        {showNewCustomerForm ? "Stäng" : "Ny kund"}
-                    </button>
+
+                    {isAdmin && (
+                        <button
+                            type="button"
+                            onClick={() => setShowNewCustomerForm((prev) => !prev)}
+                            className="rounded-full bg-[#022B4F] px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                        >
+                            {showNewCustomerForm ? "Stäng" : "Ny kund"}
+                        </button>
+                    )}
                 </div>
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <input
