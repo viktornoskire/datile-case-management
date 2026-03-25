@@ -205,7 +205,7 @@ export default function ContactsSection({customerQuery}: ContactsSectionProps) {
                                     onChange={(event) =>
                                         setDraft((current) => ({
                                             ...current,
-                                            phoneNumber: event.target.value.replace(/[^0-9+\-\s()]/g, ""),
+                                            lastName: event.target.value,
                                         }))
                                     }
                                     maxLength={50}
@@ -216,15 +216,15 @@ export default function ContactsSection({customerQuery}: ContactsSectionProps) {
                             <label className="flex flex-col gap-1 text-sm text-slate-700">
                                 E-post
                                 <input
-                                    type="text"
-                                    value={draft.firstName}
+                                    type="email"
+                                    value={draft.mail}
                                     onChange={(event) =>
                                         setDraft((current) => ({
                                             ...current,
-                                            firstName: event.target.value,
+                                            mail: event.target.value,
                                         }))
                                     }
-                                    maxLength={50}
+                                    maxLength={100}
                                     className="rounded-xl border border-slate-300 px-3 py-2"
                                 />
                             </label>
