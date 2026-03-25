@@ -51,6 +51,8 @@ export default function NewStatusForm({
                     setError("Status finns redan...");
                 } else if (err.status === 400) {
                     setError("Ogiltigt namn...");
+                } else if (err.status === 403) {
+                    setError("Du har inte rätt till detta...")
                 } else {
                     setError("Serverfel...");
                 }
@@ -107,6 +109,24 @@ export default function NewStatusForm({
                 >
                     Spara
                 </button>
+                {status && (
+                    <button
+                        type="button"
+                        onClick={async () => {
+                            if (!confirm("Är du säker på att du vill ta bort statusen?")) return;
+
+                            try {
+                                await apiClient.delete(`/api/statuses/${status.statusId}`);
+                                setDrawerOpen(false);
+                            } catch {
+                                setError("Kunde inte ta bort status...");
+                            }
+                        }}
+                        className="w-full mt-4 border border-red-200 bg-red-50 text-red-600 py-2 rounded-full text-sm font-semibold hover:bg-red-100"
+                    >
+                        Ta bort status
+                    </button>
+                )}
 
             </form>
         </div>

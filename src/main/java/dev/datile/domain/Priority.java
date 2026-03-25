@@ -22,6 +22,12 @@ public class Priority {
     @Column(name = "is_default", nullable = false)
     private boolean isDefault;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
+
     protected Priority() {}
 
     public Priority(String name, String color, boolean isDefault) {

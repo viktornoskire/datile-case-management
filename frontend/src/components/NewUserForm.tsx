@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Role } from "../types/users.ts";
 import { apiClient } from "../services/apiClient.ts";
 import * as React from "react";
+import {ApiError} from "../services/apiError.ts";
 
 type Password = {
     password: string;
@@ -41,6 +42,11 @@ export default function NewUserForm({ setDrawerOpen, user }: Props) {
             return;
         }
 
+        if (password.trim().length < 26) {
+            setError("Lösenord måste vara minst 26 tecken...");
+            return;
+        }
+
         setError(null);
 
         try {
@@ -49,6 +55,7 @@ export default function NewUserForm({ setDrawerOpen, user }: Props) {
                     name: name.trim().toLowerCase().replace(/\s+/g, ""),
                     email: email.trim().toLowerCase().replace(/\s+/g, ""),
                     role: selectedRole,
+                    password: password.trim() !== "" ? password.trim() : null,
                 });
             } else {
                 await apiClient.post<User>("/api/users", {
@@ -61,14 +68,20 @@ export default function NewUserForm({ setDrawerOpen, user }: Props) {
 
             setDrawerOpen(false);
 
-        } catch (error: unknown) {
-
-            if (error instanceof Error) {
-                setError("Användare finns redan...");
+        } catch (err: unknown) {
+            if (err instanceof ApiError) {
+                if (err.status === 409) {
+                    setError("Användare finns redan...");
+                } else if (err.status === 400) {
+                    setError("Ogiltigt namn...");
+                } else if (err.status === 403) {
+                    setError("Du har inte rätt behörigheter...")
+                } else {
+                    setError("Serverfel...");
+                }
             } else {
                 setError("Något gick fel...");
             }
-
         }
     }
 
@@ -213,6 +226,24 @@ export default function NewUserForm({ setDrawerOpen, user }: Props) {
                 >
                     Spara
                 </button>
+                {user && (
+                    <button
+                        type="button"
+                        onClick={async () => {
+                            if (!confirm("Är du säker på att du vill ta bort användaren?")) return;
+
+                            try {
+                                await apiClient.delete(`/api/users/${user.id}`);
+                                setDrawerOpen(false);
+                            } catch {
+                                setError("Kunde inte ta bort användare...");
+                            }
+                        }}
+                        className="w-full mt-4 border border-red-200 bg-red-50 text-red-600 py-2 rounded-full text-sm font-semibold hover:bg-red-100"
+                    >
+                        Ta bort användare
+                    </button>
+                )}
 
             </form>
         </div>

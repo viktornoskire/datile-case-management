@@ -1,11 +1,9 @@
 package dev.datile.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,6 +12,12 @@ public class User {
     private String email;
     private String password;
     private String role;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
 
     public User(String name, String email, String password, String role) {
         this.name = name;

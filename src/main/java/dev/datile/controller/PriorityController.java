@@ -21,7 +21,7 @@ public class PriorityController {
 
     @GetMapping
     public List<dev.datile.dto.settings.Priority> listPriorities() {
-        return priorityRepository.findAll(Sort.by("priorityId")).stream()
+        return priorityRepository.findByIsActiveTrue(Sort.by("priorityId")).stream()
                 .map(priority -> new dev.datile.dto.settings.Priority(
                         priority.getPriorityId(),
                         priority.getName(),
@@ -39,7 +39,7 @@ public class PriorityController {
             return ResponseEntity.badRequest().body("Invalid name");
         }
 
-        if (priorityRepository.existsByNameIgnoreCase(dto.name())) {
+        if (priorityRepository.existsByNameIgnoreCaseAndIsActiveTrue(dto.name())) {
             return ResponseEntity.status(409).body("Priority already exists");
         }
 
@@ -96,5 +96,23 @@ public class PriorityController {
                 .orElseGet(() ->
                         ResponseEntity.status(404).build()
                 );
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletePriority(@PathVariable Long id) {
+
+
+        return priorityRepository.findById(id)
+                .map(priority -> {
+                    if (priority.isDefault()) {
+                        return ResponseEntity.badRequest().body("Cannot delete default priority");
+                    }
+
+                    priority.setActive(false);
+                    priorityRepository.save(priority);
+
+                    return ResponseEntity.noContent().build();
+                })
+                .orElseGet(() -> ResponseEntity.status(404).build());
     }
 }

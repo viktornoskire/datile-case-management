@@ -88,7 +88,7 @@ public class AssigneeControllerTest {
                         .content(body)
                         .cookie(jwtCookie))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.assignee.name").value("johan"));
+                .andExpect(jsonPath("$.name").value("johan"));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package dev.datile.config;
 
+import dev.datile.repository.UserRepository;
 import dev.datile.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,21 +9,27 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.io.IOException;
-import java.util.List;
 
-@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            UserDetailsService userDetailsService,
+            UserRepository userRepository
+    ) {
         this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -38,35 +45,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 String username = jwtService.extractUsername(token);
 
-                if (username != null && jwtService.validateToken(token, username)) {
+                if (username != null) {
 
-                    String role = jwtService.getRoleFromToken(token);
-
-                    // ✅ critical safety
-                    if (role == null) {
+                    // ✅ Check active user
+                    var userOpt = userRepository.findByEmailAndIsActiveTrue(username);
+                    if (userOpt.isEmpty()) {
                         chain.doFilter(request, response);
                         return;
                     }
 
-                    var authorities = List.of(
-                            new SimpleGrantedAuthority("ROLE_" + role)
-                    );
+                    // ✅ Load full Spring Security user
+                    UserDetails userDetails =
+                            userDetailsService.loadUserByUsername(username);
 
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                    username,
-                                    null,
-                                    authorities
-                            );
+                    if (jwtService.validateToken(token, userDetails.getUsername())) {
 
-                    auth.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                        UsernamePasswordAuthenticationToken auth =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities() // 🔥 critical
+                                );
 
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                        auth.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request)
+                        );
+
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
                 }
 
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
         }
 

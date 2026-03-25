@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiClient } from "../services/apiClient";
 import type { Assignee } from "../types/users";
 import * as React from "react";
+import {ApiError} from "../services/apiError.ts";
 
 export default function NewAssigneeForm({
                                             setDrawerOpen,
@@ -45,13 +46,21 @@ export default function NewAssigneeForm({
             setDrawerOpen(false);
 
         } catch (error: unknown) {
-
-            if (error instanceof Error) {
-                setError("Ansvarig finns redan...");
+            if (error instanceof ApiError) {
+                if (error.status === 409) {
+                    setError("Ansvarig finns redan...");
+                } else if (error.status === 400) {
+                    setError("Ogiltigt namn...");
+                } else if (error.status === 403) {
+                    setError("Du har inte rätt behörigheter...")
+                } else if (error.status === 404) {
+                    setError("Kunde inte hitta ansvarig...")
+                } else {
+                    setError("Serverfel...");
+                }
             } else {
                 setError("Något gick fel...");
             }
-
         }
     }
 
@@ -102,6 +111,24 @@ export default function NewAssigneeForm({
                 >
                     Spara
                 </button>
+                {assignee && (
+                    <button
+                        type="button"
+                        onClick={async () => {
+                            if (!confirm("Är du säker på att du vill ta bort ansvarig?")) return;
+
+                            try {
+                                await apiClient.delete(`/api/assignees/${assignee.assigneeId}`);
+                                setDrawerOpen(false);
+                            } catch (err) {
+                                setError("Kunde inte ta bort ansvarig...");
+                            }
+                        }}
+                        className="w-full mt-2 text-red-600 text-sm font-semibold hover:underline"
+                    >
+                        Ta bort ansvarig
+                    </button>
+                )}
 
             </form>
         </div>

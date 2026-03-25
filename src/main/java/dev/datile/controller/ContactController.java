@@ -4,6 +4,7 @@ import dev.datile.dto.contacts.ContactListItemDto;
 import dev.datile.dto.contacts.CreateContactRequestDto;
 import dev.datile.dto.contacts.UpdateContactRequestDto;
 import dev.datile.service.ContactService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,14 +26,14 @@ public class ContactController {
     }
 
     @PostMapping
-    public ContactListItemDto createContact(@RequestBody CreateContactRequestDto request) {
+    public ContactListItemDto createContact(@Valid @RequestBody CreateContactRequestDto request) {
         return contactService.createContact(request);
     }
 
     @PutMapping("/{contactId}")
     public ContactListItemDto updateContact(
             @PathVariable Long contactId,
-            @RequestBody UpdateContactRequestDto request
+            @Valid @RequestBody UpdateContactRequestDto request
     ) {
         return contactService.updateContact(contactId, request);
     }

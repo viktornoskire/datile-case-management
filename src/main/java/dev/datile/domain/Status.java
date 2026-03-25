@@ -19,6 +19,9 @@ public class Status {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     protected Status() {
     }
 
@@ -37,5 +40,13 @@ public class Status {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

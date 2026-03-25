@@ -1,11 +1,14 @@
 package dev.datile.controller;
 
 import jakarta.servlet.http.Cookie;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -16,10 +19,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class AuthControllerTest {
 
     @Autowired
     MockMvc mockMvc;
+
+    @Autowired
+    Flyway flyway;
+
+    @BeforeEach
+    void setUp() {
+        flyway.clean();
+        flyway.migrate();
+    }
 
     @Test
     void login_should_return_jwt() throws Exception {
@@ -55,7 +68,8 @@ public class AuthControllerTest {
         mockMvc.perform(get("/api/auth/me")
                         .cookie(jwtCookie))
                 .andExpect(status().isOk())
-                .andExpect(content().string("{\"email\":\"ronja@gmail.com\"}"));
+                .andExpect(jsonPath("$.email").value("ronja@gmail.com"))
+                .andExpect(jsonPath("$.role").value("USER"));
     }
 
     @Test

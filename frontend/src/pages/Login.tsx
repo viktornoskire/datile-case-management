@@ -14,10 +14,8 @@ export default function Login() {
     const navigate = useNavigate();
     const { refreshAuth } = useAuth();
 
-    const [error, setError] = useState<boolean>(false);
-    const toggleError = () => {
-        setError(!error);
-    }
+    const [error, setError] = useState<string | null>(null);
+
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -35,9 +33,8 @@ export default function Login() {
 
             // Go to main page
             navigate("/");
-        } catch (err) {
-            console.error("Login failed:", err);
-            toggleError();
+        } catch (err: any) {
+           setError("Fel lösenord eller e-postadress...")
         }
     }
 
@@ -46,9 +43,13 @@ export default function Login() {
         <div className={`bg-[#F7F7F7] h-screen w-screen flex flex-col items-center`}>
             <img src="/DatileLogoBlack.png" alt="datile-logo" width={250} height={200} className="mx-auto mt-16"/>
             <form onSubmit={handleSubmit} onChange={() => {
-                if (error) toggleError();
+                if (error) setError(null);
             }}  className={`flex flex-col gap-4 bg-[#FFFFFF] border border-[#D9D9D9] mt-6 p-8 sm:w-[50vw] md:w-[40vw] lg:w-[30vw] rounded-xl sm:rounded-3xl shadow-md`}>
-                <p className={`text-red-600 font-bold font-poppins text-xs transition ${error ? "" : "hidden"}`}>Fel e-postadress eller lösenord</p>
+                <p className={`text-red-600 font-bold text-xs transition-opacity ${
+                    error ? "opacity-100" : "opacity-0"
+                }`}>
+                    {error}
+                </p>
                 <label className={`font-poppins font-bold -mb-2`}>E-postadress</label>
                 <input name="email"
                        placeholder="mail@gmail.com" type={`email`}

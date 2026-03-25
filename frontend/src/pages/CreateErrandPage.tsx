@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState, type ChangeEvent, type FormEvent} from "react";
-import { useNavigate } from "react-router-dom";
-import { addErrandHistoryEntry, createErrand } from "../api/errandsApi";
+import {useNavigate} from "react-router-dom";
+import {addErrandHistoryEntry, createErrand} from "../api/errandsApi";
+import {createContact} from "../api/contactsApi";
 import {
     fetchAssignees,
     fetchContacts,
@@ -171,6 +172,16 @@ export default function CreateErrandPage() {
 
     const [isLoadingLookups, setIsLoadingLookups] = useState(true);
     const [lookupError, setLookupError] = useState("");
+    const [showNewContactForm, setShowNewContactForm] = useState(false);
+    const [isCreatingContact, setIsCreatingContact] = useState(false);
+    const [newContactError, setNewContactError] = useState<string | null>(null);
+
+    const [newContactDraft, setNewContactDraft] = useState({
+        firstName: "",
+        lastName: "",
+        phoneNumber: "",
+        mail: "",
+    });
 
     useEffect(() => {
         let alive = true;
@@ -291,6 +302,62 @@ export default function CreateErrandPage() {
         return contacts.filter((contact) => contact.customerId === selectedCustomerId);
     }, [contacts, values.customerId]);
 
+    const handleCreateContact = async () => {
+        if (!values.customerId) {
+            setNewContactError("Välj kund först.");
+            return;
+        }
+
+        if (!newContactDraft.firstName.trim() || !newContactDraft.lastName.trim()) {
+            setNewContactError("Förnamn och efternamn måste fyllas i.");
+            return;
+        }
+
+        setIsCreatingContact(true);
+        setNewContactError(null);
+
+        try {
+            const createdContact = await createContact({
+                customerId: Number(values.customerId),
+                firstName: newContactDraft.firstName.trim(),
+                lastName: newContactDraft.lastName.trim(),
+                phoneNumber: newContactDraft.phoneNumber.trim(),
+                mail: newContactDraft.mail.trim(),
+            });
+
+            setContacts((current) => [
+                ...current,
+                {
+                    contactId: createdContact.contactId,
+                    customerId: createdContact.customerId,
+                    firstName: createdContact.firstName,
+                    lastName: createdContact.lastName,
+                    phoneNumber: createdContact.phoneNumber ?? "",
+                    mail: createdContact.mail ?? "",
+                },
+            ]);
+
+            setValues((current) => ({
+                ...current,
+                contactId: String(createdContact.contactId),
+            }));
+
+            setNewContactDraft({
+                firstName: "",
+                lastName: "",
+                phoneNumber: "",
+                mail: "",
+            });
+
+            setShowNewContactForm(false);
+        } catch (error) {
+            console.error(error);
+            setNewContactError("Kunde inte skapa kontakten.");
+        } finally {
+            setIsCreatingContact(false);
+        }
+    };
+
     const selectedPriority = useMemo(() => {
         return priorities.find(
             (priority) => String(priority.priorityId) === values.priorityId,
@@ -325,7 +392,7 @@ export default function CreateErrandPage() {
     const handleFieldChange = (
         event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
     ) => {
-        const { name, value } = event.target;
+        const {name, value} = event.target;
 
         setValues((current) => ({
             ...current,
@@ -383,7 +450,7 @@ export default function CreateErrandPage() {
         setValues((current) => ({
             ...current,
             purchases: current.purchases.map((purchase, purchaseIndex) =>
-                purchaseIndex === index ? { ...purchase, [field]: value } : purchase,
+                purchaseIndex === index ? {...purchase, [field]: value} : purchase,
             ),
         }));
 
@@ -464,7 +531,8 @@ export default function CreateErrandPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-3" noValidate>
                     {lookupError ? (
-                        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
+                        <div
+                            className="rounded-2xl border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
                             {lookupError}
                         </div>
                     ) : null}
@@ -476,7 +544,8 @@ export default function CreateErrandPage() {
                     ) : null}
 
                     {submitWarning ? (
-                        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                        <div
+                            className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
                             {submitWarning}
                         </div>
                     ) : null}
@@ -624,6 +693,147 @@ export default function CreateErrandPage() {
                                     <p className="mt-1 text-sm text-red-600">
                                         {errors.contactId}
                                     </p>
+                                ) : null}
+
+                                <div className="mt-2 flex flex-wrap items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowNewContactForm((prev) => !prev);
+                                            setNewContactError(null);
+                                        }}
+                                        disabled={!values.customerId}
+                                        className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {showNewContactForm ? "Stäng ny kontakt" : "Ny kontakt"}
+                                    </button>
+
+                                    {!values.customerId ? (
+                                        <p className="text-sm text-slate-500">
+                                            Välj kund först för att skapa kontakt.
+                                        </p>
+                                    ) : null}
+                                </div>
+
+                                {showNewContactForm && values.customerId ? (
+                                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                        <h3 className="mb-3 text-sm font-semibold text-slate-900">
+                                            Ny kontakt
+                                        </h3>
+
+                                        {newContactError ? (
+                                            <div
+                                                className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                                                {newContactError}
+                                            </div>
+                                        ) : null}
+
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <div>
+                                                <label
+                                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                    Förnamn
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={newContactDraft.firstName}
+                                                    onChange={(event) =>
+                                                        setNewContactDraft((current) => ({
+                                                            ...current,
+                                                            firstName: event.target.value,
+                                                        }))
+                                                    }
+                                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                    Efternamn
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={newContactDraft.lastName}
+                                                    onChange={(event) =>
+                                                        setNewContactDraft((current) => ({
+                                                            ...current,
+                                                            lastName: event.target.value,
+                                                        }))
+                                                    }
+                                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                    Telefon
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    inputMode="tel"
+                                                    value={newContactDraft.phoneNumber}
+                                                    onChange={(event) =>
+                                                        setNewContactDraft((current) => ({
+                                                            ...current,
+                                                            phoneNumber: event.target.value.replace(/[^0-9+\-\s()]/g, ""),
+                                                        }))
+                                                    }
+                                                    placeholder="070-123 45 67"
+                                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                    E-post
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    inputMode="email"
+                                                    value={newContactDraft.mail}
+                                                    onChange={(event) =>
+                                                        setNewContactDraft((current) => ({
+                                                            ...current,
+                                                            mail: event.target.value,
+                                                        }))
+                                                    }
+                                                    placeholder="namn@foretag.se"
+                                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 flex justify-end gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowNewContactForm(false);
+                                                    setNewContactDraft({
+                                                        firstName: "",
+                                                        lastName: "",
+                                                        phoneNumber: "",
+                                                        mail: "",
+                                                    });
+                                                    setNewContactError(null);
+                                                }}
+                                                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                                            >
+                                                Avbryt
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => void handleCreateContact()}
+                                                disabled={isCreatingContact}
+                                                className="rounded-full bg-[#99D0B6] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#86c4a4] disabled:opacity-50"
+                                            >
+                                                {isCreatingContact ? "Sparar..." : "Spara kontakt"}
+                                            </button>
+                                        </div>
+                                    </div>
                                 ) : null}
                             </div>
 

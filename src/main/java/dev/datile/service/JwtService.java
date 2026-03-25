@@ -23,7 +23,6 @@ public class JwtService {
     public String generateToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
-                .claim("role", role) // ✅ critical fix
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(getSigningKey())
@@ -32,10 +31,6 @@ public class JwtService {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
-    }
-
-    public String getRoleFromToken(String token) {
-        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     public boolean validateToken(String token, String username) {

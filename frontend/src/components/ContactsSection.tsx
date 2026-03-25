@@ -22,7 +22,7 @@ type ContactsSectionProps = {
     customerQuery: string;
 };
 
-export default function ContactsSection({ customerQuery }: ContactsSectionProps) {
+export default function ContactsSection({customerQuery}: ContactsSectionProps) {
     const [contacts, setContacts] = useState<ContactListItem[]>([]);
     const [customers, setCustomers] = useState<CustomerLookup[]>([]);
     const [loading, setLoading] = useState(true);
@@ -66,6 +66,16 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
             return;
         }
 
+        if (!isValidEmail(draft.mail)) {
+            setError("Ange en giltig e-postadress.");
+            return;
+        }
+
+        if (!isValidPhoneNumber(draft.phoneNumber)) {
+            setError("Ange ett giltigt telefonnummer.");
+            return;
+        }
+
         setIsCreating(true);
         setError(null);
 
@@ -88,6 +98,15 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
             setIsCreating(false);
         }
     };
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phonePattern = /^[0-9+\-\s()]{7,20}$/;
+
+    const isValidEmail = (value: string) =>
+        value.trim() === "" || emailPattern.test(value.trim());
+
+    const isValidPhoneNumber = (value: string) =>
+        value.trim() === "" || phonePattern.test(value.trim());
 
     const normalizedCustomerQuery = customerQuery.trim().toLowerCase();
 
@@ -145,14 +164,18 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
                             <label className="flex flex-col gap-1 text-sm text-slate-700">
                                 Telefon
                                 <input
-                                    type="text"
+                                    type="tel"
+                                    inputMode="tel"
                                     value={draft.phoneNumber}
                                     onChange={(event) =>
                                         setDraft((current) => ({
                                             ...current,
-                                            phoneNumber: event.target.value,
+                                            phoneNumber: event.target.value.replace(/[^0-9+\-\s()]/g, ""),
                                         }))
                                     }
+                                    pattern="[0-9+\-\s()]{7,20}"
+                                    maxLength={20}
+                                    placeholder="070-123 45 67"
                                     className="rounded-xl border border-slate-300 px-3 py-2"
                                 />
                             </label>
@@ -182,9 +205,10 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
                                     onChange={(event) =>
                                         setDraft((current) => ({
                                             ...current,
-                                            lastName: event.target.value,
+                                            phoneNumber: event.target.value.replace(/[^0-9+\-\s()]/g, ""),
                                         }))
                                     }
+                                    maxLength={50}
                                     className="rounded-xl border border-slate-300 px-3 py-2"
                                 />
                             </label>
@@ -192,14 +216,15 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
                             <label className="flex flex-col gap-1 text-sm text-slate-700">
                                 E-post
                                 <input
-                                    type="email"
-                                    value={draft.mail}
+                                    type="text"
+                                    value={draft.firstName}
                                     onChange={(event) =>
                                         setDraft((current) => ({
                                             ...current,
-                                            mail: event.target.value,
+                                            firstName: event.target.value,
                                         }))
                                     }
+                                    maxLength={50}
                                     className="rounded-xl border border-slate-300 px-3 py-2"
                                 />
                             </label>

@@ -14,6 +14,12 @@ public class Assignee {
     @Column(nullable = false, length = 255)
     private String name;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
+
     protected Assignee() {
     }
 

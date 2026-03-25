@@ -5,6 +5,7 @@ import dev.datile.dto.customers.CustomerListItemDto;
 import dev.datile.dto.customers.CustomersResponseDto;
 import dev.datile.dto.customers.UpdateCustomerRequestDto;
 import dev.datile.service.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,14 +31,14 @@ public class CustomerController {
     }
 
     @PostMapping
-    public CustomerListItemDto createCustomer(@RequestBody CreateCustomerRequestDto request) {
+    public CustomerListItemDto createCustomer(@Valid @RequestBody CreateCustomerRequestDto request) {
         return customerService.createCustomer(request);
     }
 
     @PutMapping("/{customerId}")
     public CustomerListItemDto updateCustomer(
             @PathVariable Long customerId,
-            @RequestBody UpdateCustomerRequestDto request
+            @Valid @RequestBody UpdateCustomerRequestDto request
     ) {
         return customerService.updateCustomer(customerId, request);
     }

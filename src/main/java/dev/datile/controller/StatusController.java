@@ -21,7 +21,7 @@ public class StatusController {
 
     @GetMapping
     public List<StatusDto> listStatuses() {
-        return statusRepository.findAll(Sort.by("statusId")).stream()
+        return statusRepository.findByIsActiveTrue(Sort.by("statusId")).stream()
                 .map(status -> new StatusDto(
                         status.getStatusId(),
                         status.getName()
@@ -35,7 +35,7 @@ public class StatusController {
             return ResponseEntity.badRequest().body("Invalid name");
         }
 
-        boolean exists = statusRepository.existsByNameIgnoreCase(dto.name());
+        boolean exists = statusRepository.existsByNameIgnoreCaseAndIsActiveTrue(dto.name());
         if (exists) {
             return ResponseEntity.status(409).body("Status already exists");
         }
@@ -64,6 +64,19 @@ public class StatusController {
                     return ResponseEntity.ok(
                             new StatusDto(status.getStatusId(), status.getName())
                     );
+                })
+                .orElseGet(() -> ResponseEntity.status(404).body("Status not found"));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteStatus(@PathVariable Long id) {
+
+        return statusRepository.findById(id)
+                .map(status -> {
+                    status.setActive(false); // 👈 soft delete
+                    statusRepository.save(status);
+
+                    return ResponseEntity.noContent().build();
                 })
                 .orElseGet(() -> ResponseEntity.status(404).body("Status not found"));
     }

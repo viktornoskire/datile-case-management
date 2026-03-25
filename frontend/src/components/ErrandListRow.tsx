@@ -110,7 +110,7 @@ export const ErrandListRow = ({
                     </div>
                 </div>
 
-                <div className="hidden sm:grid sm:grid-cols-[90px_minmax(0,2fr)_140px_140px_120px_120px_120px] sm:items-center sm:gap-3">
+                <div className="hidden sm:grid sm:grid-cols-[90px_minmax(0,2fr)_140px_140px_120px_120px_110px_110px] sm:items-center sm:gap-3">
                     <div className="text-sm font-semibold text-slate-900">
                         {String(errand.errandId).padStart(3, "0")}
                     </div>
@@ -142,9 +142,11 @@ export const ErrandListRow = ({
                         </span>
                     </div>
 
-                    <div className="flex items-center justify-end gap-3">
-                        <div className="text-sm text-slate-800">{formatDate(errand.createdAt)}</div>
+                    <div className="text-sm text-slate-800">
+                        {formatDate(errand.createdAt)}
+                    </div>
 
+                    <div className="flex justify-end">
                         <button
                             type="button"
                             className="rounded-full border border-slate-300 bg-white px-1.5 py-0.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"

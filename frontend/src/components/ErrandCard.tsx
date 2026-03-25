@@ -64,7 +64,7 @@ export const ErrandCard = ({
                 <div className="mb-3 flex items-start justify-between gap-2 border-b border-slate-200 pb-2">
                     <div className="min-w-0">
                         <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-                            Ärende
+                            Rubrik
                         </div>
 
                         <h3 className="mt-1 line-clamp-2 text-base font-bold leading-5 text-slate-900">
