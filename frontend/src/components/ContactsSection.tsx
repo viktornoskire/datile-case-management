@@ -67,19 +67,19 @@ export default function ContactsSection({customerQuery}: ContactsSectionProps) {
         }
 
         if (!isValidEmail(draft.mail)) {
-            setError("Ange en giltig e-postadress.");
+            setError("Ogiltig e-postadress.");
             return;
         }
 
         if (!isValidPhoneNumber(draft.phoneNumber)) {
-            setError("Ange ett giltigt telefonnummer.");
+            setError("Ogiltigt telefonnummer.");
             return;
         }
 
-        setIsCreating(true);
-        setError(null);
-
         try {
+            setIsCreating(true);
+            setError(null);
+
             await createContact({
                 customerId: Number(draft.customerId),
                 firstName: draft.firstName.trim(),
@@ -88,12 +88,12 @@ export default function ContactsSection({customerQuery}: ContactsSectionProps) {
                 mail: draft.mail.trim(),
             });
 
-            setDraft(emptyDraft);
-            setShowNewContactForm(false);
             await loadContacts();
-        } catch (err) {
-            console.error("createContact failed:", err);
-            setError("Kunde inte skapa kontakten.");
+            setShowNewContactForm(false);
+            setDraft(emptyDraft);
+        } catch (e) {
+            console.error(e);
+            setError("Kunde inte skapa kontakt.");
         } finally {
             setIsCreating(false);
         }
