@@ -110,7 +110,7 @@ export const ErrandCard = ({
                                 </div>
 
                                 <div>
-                                    <span className="font-semibold text-slate-500">Namn: </span>
+                                    <span className="font-semibold text-slate-500">Kontakt: </span>
                                     <span className="font-medium text-slate-900">
                                         {safe(contactName)}
                                     </span>

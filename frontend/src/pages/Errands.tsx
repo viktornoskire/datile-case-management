@@ -326,29 +326,29 @@ export default function Errands() {
                     </div>
                 ) : (
                     <div>
-                        <div className="hidden sm:grid sm:grid-cols-[90px_minmax(0,2fr)_140px_140px_120px_120px_110px_110px] sm:items-center sm:gap-3 sm:rounded-t-2xl sm:border sm:border-slate-200 sm:border-b-0 sm:bg-slate-100 sm:px-5 sm:py-3">
-                            <div className="text-[14px] font-semibold uppercase tracking-wide text-slate-500">
+                        <div className="hidden sm:grid sm:grid-cols-[72px_minmax(0,2.8fr)_minmax(0,1.8fr)_minmax(0,1.2fr)_minmax(0,1.1fr)_110px_110px_96px] sm:items-center sm:gap-4 sm:rounded-t-2xl sm:border sm:border-slate-200 sm:border-b-0 sm:bg-slate-100 sm:px-4 sm:py-3 sm:pl-5">
+                            <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                                 ID
                             </div>
-                            <div className="text-[14px] font-semibold uppercase tracking-wide text-slate-500">
+                            <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                                 Rubrik
                             </div>
-                            <div className="text-[14px] font-semibold uppercase tracking-wide text-slate-500">
+                            <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                                 Kund
                             </div>
-                            <div className="text-[14px] font-semibold uppercase tracking-wide text-slate-500">
+                            <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                                 Ansvarig
                             </div>
-                            <div className="text-[14px] font-semibold uppercase tracking-wide text-slate-500">
+                            <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                                 Status
                             </div>
-                            <div className="text-[14px] font-semibold uppercase tracking-wide text-slate-500">
+                            <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                                 Prioritet
                             </div>
-                            <div className="text-[14px] font-semibold uppercase tracking-wide text-slate-500">
+                            <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-500">
                                 Datum
                             </div>
-                            <div className="text-[14px] font-semibold text-right uppercase tracking-wide text-slate-500">
+                            <div className="text-[13px] font-semibold text-right uppercase tracking-wide text-slate-500">
                                 Åtgärd
                             </div>
                         </div>

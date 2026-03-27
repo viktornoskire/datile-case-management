@@ -34,6 +34,9 @@ export const ErrandListRow = ({
     const { name: priorityName, accentStyle, badgeStyle } = getPriorityStyles(errand.priority);
 
     const customerName = errand.customer?.name ?? "—";
+    const contactName = errand.contact
+        ? `${errand.contact.firstName} ${errand.contact.lastName}`
+        : "—";
     const assigneeName = errand.assignee?.name ?? "—";
     const statusName = errand.status?.name ?? "—";
 
@@ -69,8 +72,13 @@ export const ErrandListRow = ({
                             <div className="truncate text-sm font-semibold text-slate-900">
                                 {safe(errand.title)}
                             </div>
+
                             <div className="mt-0.5 text-xs text-slate-500">
                                 #{String(errand.errandId).padStart(3, "0")} · {safe(customerName)}
+                            </div>
+
+                            <div className="mt-1 text-xs text-slate-400">
+                                Kontakt: {safe(contactName)}
                             </div>
                         </div>
 
@@ -110,9 +118,9 @@ export const ErrandListRow = ({
                     </div>
                 </div>
 
-                <div className="hidden sm:grid sm:grid-cols-[90px_minmax(0,2fr)_140px_140px_120px_120px_110px_110px] sm:items-center sm:gap-3">
+                <div className="hidden sm:grid sm:grid-cols-[72px_minmax(0,2.8fr)_minmax(0,1.8fr)_minmax(0,1.2fr)_minmax(0,1.1fr)_110px_110px_96px] sm:items-center sm:gap-4">
                     <div className="text-sm font-semibold text-slate-900">
-                        {String(errand.errandId).padStart(3, "0")}
+                        #{String(errand.errandId).padStart(3, "0")}
                     </div>
 
                     <div className="min-w-0">
@@ -129,9 +137,20 @@ export const ErrandListRow = ({
                         </div>
                     </div>
 
-                    <div className="truncate text-sm text-slate-800">{safe(customerName)}</div>
-                    <div className="truncate text-sm text-slate-800">{safe(assigneeName)}</div>
-                    <div className="truncate text-sm text-slate-800">{safe(statusName)}</div>
+                    <div className="min-w-0">
+                        <div className="truncate text-sm text-slate-800">{safe(customerName)}</div>
+                        <div className="mt-0.5 truncate text-[11px] text-slate-500">
+                            Kontakt: {safe(contactName)}
+                        </div>
+                    </div>
+
+                    <div className="truncate text-sm text-slate-800">
+                        {safe(assigneeName)}
+                    </div>
+
+                    <div className="truncate text-sm text-slate-800">
+                        {safe(statusName)}
+                    </div>
 
                     <div>
                         <span
@@ -149,7 +168,7 @@ export const ErrandListRow = ({
                     <div className="flex justify-end">
                         <button
                             type="button"
-                            className="rounded-full border border-slate-300 bg-white px-1.5 py-0.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+                            className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
                             onClick={(event) => {
                                 event.stopPropagation();
                                 onEdit(errand.errandId);
