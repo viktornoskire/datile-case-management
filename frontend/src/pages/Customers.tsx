@@ -164,17 +164,8 @@ export default function Customers() {
         }
     };
 
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
     const authContext = useContext(AuthContext);
-
-    useEffect(() => {
-        if (authContext?.role === "ADMIN") {
-            setIsAdmin(true);
-        } else {
-            setIsAdmin(false);
-        }
-    }, []);
+    const isAdmin = authContext?.role === "ADMIN";
 
     const getVisiblePages = (): (number | "...")[] => {
         const pages: (number | "...")[] = [];

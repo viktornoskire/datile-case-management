@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchErrands } from "../api/errandsApi";
+import {
+    fetchAssignees,
+    fetchCustomerLookups,
+    type CustomerLookup,
+} from "../api/LookupsApi";
 import { ErrandCard } from "../components/ErrandCard";
 import { ErrandListRow } from "../components/ErrandListRow";
 import { ErrandDetailsModal } from "../components/ErrandDetailsModal";
 import { FilterPanel } from "../components/FilterPanel";
 import {
-    type ErrandsResponse,
+    buildErrandFilterParams,
+    clearSavedErrandFilters,
+    errandPriorityOptions,
+    errandStatusOptions,
+    initialErrandFilters,
+    loadSavedErrandFilters,
+    saveErrandFilters,
+    type ErrandAssignee,
     type ErrandDetails,
     type ErrandFilters,
-    buildErrandFilterParams,
-    initialErrandFilters,
+    type ErrandsResponse,
 } from "../types/errands";
 
 /* React component for an errand page */
@@ -24,12 +35,12 @@ export default function Errands() {
     const [selectedErrandId, setSelectedErrandId] = useState<number | null>(null);
     const [modalMode, setModalMode] = useState<"view" | "edit">("view");
 
-    const [filters, setFilters] = useState<ErrandFilters>(initialErrandFilters);
+    const [filters, setFilters] = useState<ErrandFilters>(() => loadSavedErrandFilters());
     const [debouncedQ, setDebouncedQ] = useState(filters.q);
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
-    const [page, setPage] = useState(0);
-    const size = 20;
+    const [customers, setCustomers] = useState<CustomerLookup[]>([]);
+    const [assignees, setAssignees] = useState<ErrandAssignee[]>([]);
 
     const navigate = useNavigate();
 
@@ -78,7 +89,7 @@ export default function Errands() {
     const getVisiblePages = (): (number | "...")[] => {
         const pages: (number | "...")[] = [];
         const total = totalPages;
-        const current = page;
+        const current = filters.page;
 
         if (total <= 7) {
             return Array.from({ length: total }, (_, i) => i);
@@ -107,23 +118,86 @@ export default function Errands() {
     };
 
     useEffect(() => {
+        saveErrandFilters(filters);
+    }, [filters]);
+
+    useEffect(() => {
+        let alive = true;
+
+        const loadFilterOptions = async () => {
+            try {
+                const [customerData, assigneeData] = await Promise.all([
+                    fetchCustomerLookups(),
+                    fetchAssignees(),
+                ]);
+
+                if (!alive) return;
+
+                setCustomers(customerData);
+                setAssignees(assigneeData);
+            } catch (e) {
+                if (!alive) return;
+                console.error("Failed to load errand filter options", e);
+            }
+        };
+
+        void loadFilterOptions();
+
+        return () => {
+            alive = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const allowedStatuses = new Set(errandStatusOptions.map((option) => option.value));
+        const allowedPriorities = new Set(errandPriorityOptions.map((option) => option.value));
+
+        setFilters((current) => {
+            const nextCustomerId =
+                current.customerId !== "" &&
+                customers.some((customer) => String(customer.customerId) === current.customerId)
+                    ? current.customerId
+                    : "";
+
+            const nextAssigneeId =
+                current.assigneeId !== "" &&
+                assignees.some((assignee) => String(assignee.assigneeId) === current.assigneeId)
+                    ? current.assigneeId
+                    : "";
+
+            const nextStatuses = current.statuses.filter((status) => allowedStatuses.has(status));
+            const nextPriorities = current.priorities.filter((priority) =>
+                allowedPriorities.has(priority),
+            );
+
+            const hasChanged =
+                nextCustomerId !== current.customerId ||
+                nextAssigneeId !== current.assigneeId ||
+                nextStatuses.length !== current.statuses.length ||
+                nextPriorities.length !== current.priorities.length;
+
+            if (!hasChanged) {
+                return current;
+            }
+
+            return {
+                ...current,
+                customerId: nextCustomerId,
+                assigneeId: nextAssigneeId,
+                statuses: nextStatuses,
+                priorities: nextPriorities,
+                page: 0,
+            };
+        });
+    }, [customers, assignees]);
+
+    useEffect(() => {
         const timeoutId = window.setTimeout(() => {
             setDebouncedQ(filters.q);
         }, 400);
 
         return () => window.clearTimeout(timeoutId);
     }, [filters.q]);
-
-    useEffect(() => {
-        setPage(0);
-    }, [
-        filters.sortBy,
-        filters.statuses,
-        filters.priorities,
-        filters.assigneeId,
-        filters.customerId,
-        debouncedQ,
-    ]);
 
     useEffect(() => {
         let alive = true;
@@ -134,14 +208,12 @@ export default function Errands() {
                 setError(null);
 
                 const res = await fetchErrands({
-                    page,
-                    size,
-                    sortBy: filters.sortBy,
-                    sortDir: "desc",
                     ...buildErrandFilterParams({
                         ...filters,
                         q: debouncedQ,
                     }),
+                    sortBy: filters.sortBy,
+                    sortDir: "desc",
                 });
 
                 if (alive) {
@@ -163,7 +235,8 @@ export default function Errands() {
             alive = false;
         };
     }, [
-        page,
+        filters.page,
+        filters.size,
         filters.sortBy,
         filters.statuses,
         filters.priorities,
@@ -265,10 +338,13 @@ export default function Errands() {
                         <FilterPanel
                             filters={filters}
                             onChange={setFilters}
-                            onClear={() => setFilters(initialErrandFilters)}
+                            onClear={() => {
+                                clearSavedErrandFilters();
+                                setFilters(initialErrandFilters);
+                            }}
                             onClose={() => setIsFilterPanelOpen(false)}
-                            customers={[]}
-                            assignees={[]}
+                            customers={customers}
+                            assignees={assignees}
                         />
                     </div>
                 ) : (
@@ -277,7 +353,11 @@ export default function Errands() {
                             <button
                                 type="button"
                                 onClick={() => {
-                                    setFilters((current) => ({ ...current, q: "" }));
+                                    setFilters((current) => ({
+                                        ...current,
+                                        q: "",
+                                        page: 0,
+                                    }));
                                     setIsFilterPanelOpen(true);
                                 }}
                                 className="inline-flex w-full items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto"
@@ -293,6 +373,7 @@ export default function Errands() {
                                         setFilters((current) => ({
                                             ...current,
                                             q: event.target.value,
+                                            page: 0,
                                         }))
                                     }
                                     placeholder="Sök ärende..."
@@ -371,8 +452,13 @@ export default function Errands() {
                     <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
                         <button
                             type="button"
-                            onClick={() => setPage((current) => Math.max(0, current - 1))}
-                            disabled={page === 0}
+                            onClick={() =>
+                                setFilters((current) => ({
+                                    ...current,
+                                    page: Math.max(0, current.page - 1),
+                                }))
+                            }
+                            disabled={filters.page === 0}
                             className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             Föregående
@@ -381,35 +467,40 @@ export default function Errands() {
                         <div className="flex flex-wrap items-center gap-2">
                             {getVisiblePages().map((item: number | "...", index: number) =>
                                 item === "..." ? (
-                                    <span
-                                        key={`dots-${index}`}
-                                        className="px-2 text-slate-500"
-                                    >
+                                    <span key={`dots-${index}`} className="px-2 text-slate-500">
                                         ...
                                     </span>
                                 ) : (
                                     <button
                                         key={item}
                                         type="button"
-                                        onClick={() => setPage(item)}
+                                        onClick={() =>
+                                            setFilters((current) => ({
+                                                ...current,
+                                                page: item,
+                                            }))
+                                        }
                                         className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                                            page === item
+                                            filters.page === item
                                                 ? "bg-[#022B4F] text-white"
                                                 : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
                                         }`}
                                     >
                                         {item + 1}
                                     </button>
-                                )
+                                ),
                             )}
                         </div>
 
                         <button
                             type="button"
                             onClick={() =>
-                                setPage((current) => Math.min(totalPages - 1, current + 1))
+                                setFilters((current) => ({
+                                    ...current,
+                                    page: Math.min(totalPages - 1, current.page + 1),
+                                }))
                             }
-                            disabled={page >= totalPages - 1}
+                            disabled={filters.page >= totalPages - 1}
                             className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             Nästa
