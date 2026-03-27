@@ -1,7 +1,7 @@
-import {useEffect, useMemo, useState, type ChangeEvent, type FormEvent} from "react";
-import {useNavigate} from "react-router-dom";
-import {addErrandHistoryEntry, createErrand} from "../api/errandsApi";
-import {createContact} from "../api/contactsApi";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { addErrandHistoryEntry, createErrand } from "../api/errandsApi";
+import { createContact } from "../api/contactsApi";
 import {
     fetchAssignees,
     fetchContacts,
@@ -239,10 +239,7 @@ export default function CreateErrandPage() {
             setCustomers(loadedCustomers);
             setContacts(loadedContacts);
 
-            const defaultPriority =
-                loadedPriorities.find(
-                    (priority) => priority.isDefault
-                );
+            const defaultPriority = loadedPriorities.find((priority) => priority.isDefault);
 
             setValues((current) => ({
                 ...current,
@@ -278,7 +275,7 @@ export default function CreateErrandPage() {
 
             if (failures.length > 0) {
                 setLookupError(
-                    `Kunde inte hämta alla valbara listor. ${failures.join(" | ")}`,
+                    `Kunde inte hämta alla valbara listor. ${failures.join(" | ")}`
                 );
             }
 
@@ -301,6 +298,108 @@ export default function CreateErrandPage() {
 
         return contacts.filter((contact) => contact.customerId === selectedCustomerId);
     }, [contacts, values.customerId]);
+
+    const selectedPriority = useMemo(() => {
+        return priorities.find(
+            (priority) => String(priority.priorityId) === values.priorityId
+        );
+    }, [priorities, values.priorityId]);
+
+    useEffect(() => {
+        if (!values.customerId) {
+            setValues((current) => ({
+                ...current,
+                contactId: "",
+            }));
+            return;
+        }
+
+        const selectedCustomerId = Number(values.customerId);
+
+        const contactBelongsToCustomer = contacts.some(
+            (contact) =>
+                contact.contactId === Number(values.contactId) &&
+                contact.customerId === selectedCustomerId
+        );
+
+        if (!contactBelongsToCustomer) {
+            setValues((current) => ({
+                ...current,
+                contactId: "",
+            }));
+        }
+    }, [values.customerId, values.contactId, contacts]);
+
+    const handleFieldChange = (
+        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
+        const { name, value } = event.target;
+
+        setValues((current) => ({
+            ...current,
+            [name]: value,
+        }));
+
+        setErrors((current) => ({
+            ...current,
+            [name]: undefined,
+        }));
+    };
+
+    const handleCustomerChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        const nextCustomerId = event.target.value;
+
+        setValues((current) => ({
+            ...current,
+            customerId: nextCustomerId,
+            contactId: "",
+        }));
+
+        setErrors((current) => ({
+            ...current,
+            customerId: undefined,
+            contactId: undefined,
+        }));
+    };
+
+    const handleAddPurchase = () => {
+        setValues((current) => ({
+            ...current,
+            purchases: [...current.purchases, emptyPurchase()],
+        }));
+
+        setErrors((current) => ({
+            ...current,
+            purchases: undefined,
+        }));
+    };
+
+    const handleRemovePurchase = (index: number) => {
+        setValues((current) => ({
+            ...current,
+            purchases: current.purchases.filter(
+                (_, purchaseIndex) => purchaseIndex !== index
+            ),
+        }));
+    };
+
+    const handlePurchaseChange = (
+        index: number,
+        field: keyof PurchaseFormValue,
+        value: string
+    ) => {
+        setValues((current) => ({
+            ...current,
+            purchases: current.purchases.map((purchase, purchaseIndex) =>
+                purchaseIndex === index ? { ...purchase, [field]: value } : purchase
+            ),
+        }));
+
+        setErrors((current) => ({
+            ...current,
+            purchases: undefined,
+        }));
+    };
 
     const handleCreateContact = async () => {
         if (!values.customerId) {
@@ -358,108 +457,6 @@ export default function CreateErrandPage() {
         }
     };
 
-    const selectedPriority = useMemo(() => {
-        return priorities.find(
-            (priority) => String(priority.priorityId) === values.priorityId,
-        );
-    }, [priorities, values.priorityId]);
-
-    useEffect(() => {
-        if (!values.customerId) {
-            setValues((current) => ({
-                ...current,
-                contactId: "",
-            }));
-            return;
-        }
-
-        const selectedCustomerId = Number(values.customerId);
-
-        const contactBelongsToCustomer = contacts.some(
-            (contact) =>
-                contact.contactId === Number(values.contactId) &&
-                contact.customerId === selectedCustomerId,
-        );
-
-        if (!contactBelongsToCustomer) {
-            setValues((current) => ({
-                ...current,
-                contactId: "",
-            }));
-        }
-    }, [values.customerId, values.contactId, contacts]);
-
-    const handleFieldChange = (
-        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-    ) => {
-        const {name, value} = event.target;
-
-        setValues((current) => ({
-            ...current,
-            [name]: value,
-        }));
-
-        setErrors((current) => ({
-            ...current,
-            [name]: undefined,
-        }));
-    };
-
-    const handleCustomerChange = (event: ChangeEvent<HTMLSelectElement>) => {
-        const nextCustomerId = event.target.value;
-
-        setValues((current) => ({
-            ...current,
-            customerId: nextCustomerId,
-            contactId: "",
-        }));
-
-        setErrors((current) => ({
-            ...current,
-            customerId: undefined,
-            contactId: undefined,
-        }));
-    };
-
-    const handleAddPurchase = () => {
-        setValues((current) => ({
-            ...current,
-            purchases: [...current.purchases, emptyPurchase()],
-        }));
-
-        setErrors((current) => ({
-            ...current,
-            purchases: undefined,
-        }));
-    };
-
-    const handleRemovePurchase = (index: number) => {
-        setValues((current) => ({
-            ...current,
-            purchases: current.purchases.filter(
-                (_, purchaseIndex) => purchaseIndex !== index,
-            ),
-        }));
-    };
-
-    const handlePurchaseChange = (
-        index: number,
-        field: keyof PurchaseFormValue,
-        value: string,
-    ) => {
-        setValues((current) => ({
-            ...current,
-            purchases: current.purchases.map((purchase, purchaseIndex) =>
-                purchaseIndex === index ? {...purchase, [field]: value} : purchase,
-            ),
-        }));
-
-        setErrors((current) => ({
-            ...current,
-            purchases: undefined,
-        }));
-    };
-
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -501,7 +498,7 @@ export default function CreateErrandPage() {
                     });
                 } catch {
                     setSubmitWarning(
-                        "Ärendet skapades, men första historiknoteringen kunde inte sparas.",
+                        "Ärendet skapades, men första historiknoteringen kunde inte sparas."
                     );
                 }
             }
@@ -520,42 +517,40 @@ export default function CreateErrandPage() {
     };
 
     return (
-        <div className="min-h-screen bg-stone-100 p-4">
-            <div className="mx-auto max-w-[1600px]">
-                <div className="mb-6">
+        <div className="min-h-screen bg-stone-100 px-3 py-4 sm:px-4">
+            <div className="mx-auto max-w-[1600px] space-y-4">
+                <div className="mb-2">
                     <p className="text-sm text-slate-500">Ärenden / Skapa ärende</p>
-                    <h1 className="mt-2 text-3xl font-bold text-slate-900">
+                    <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
                         Skapa ärende
                     </h1>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+                <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                     {lookupError ? (
-                        <div
-                            className="rounded-2xl border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
+                        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-3 py-3 text-sm text-yellow-800">
                             {lookupError}
                         </div>
                     ) : null}
 
                     {submitError ? (
-                        <div className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                        <div className="rounded-2xl border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700">
                             {submitError}
                         </div>
                     ) : null}
 
                     {submitWarning ? (
-                        <div
-                            className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-700">
                             {submitWarning}
                         </div>
                     ) : null}
 
-                    <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <h2 className="mb-2 text-lg font-semibold text-slate-900">
+                    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4">
+                        <h2 className="mb-3 text-lg font-semibold text-slate-900">
                             Grundinformation
                         </h2>
 
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
                             <div>
                                 <label
                                     htmlFor="customerId"
@@ -569,7 +564,7 @@ export default function CreateErrandPage() {
                                     value={values.customerId}
                                     onChange={handleCustomerChange}
                                     disabled={isLoadingLookups}
-                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
+                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
                                 >
                                     {isLoadingLookups ? (
                                         <option value="">Laddar kunder...</option>
@@ -607,7 +602,7 @@ export default function CreateErrandPage() {
                                     value={values.title}
                                     onChange={handleFieldChange}
                                     placeholder="Ange titel"
-                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                                 />
                                 {errors.title ? (
                                     <p className="mt-1 text-sm text-red-600">
@@ -629,7 +624,7 @@ export default function CreateErrandPage() {
                                     value={values.assigneeId}
                                     onChange={handleFieldChange}
                                     disabled={isLoadingLookups}
-                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
+                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
                                 >
                                     {isLoadingLookups ? (
                                         <option value="">Laddar ansvariga...</option>
@@ -667,7 +662,7 @@ export default function CreateErrandPage() {
                                     value={values.contactId}
                                     onChange={handleFieldChange}
                                     disabled={isLoadingLookups || !values.customerId}
-                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
+                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
                                 >
                                     {isLoadingLookups ? (
                                         <option value="">Laddar kontakter...</option>
@@ -695,7 +690,7 @@ export default function CreateErrandPage() {
                                     </p>
                                 ) : null}
 
-                                <div className="mt-2 flex flex-wrap items-center gap-3">
+                                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -703,7 +698,7 @@ export default function CreateErrandPage() {
                                             setNewContactError(null);
                                         }}
                                         disabled={!values.customerId}
-                                        className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="w-full rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                                     >
                                         {showNewContactForm ? "Stäng ny kontakt" : "Ny kontakt"}
                                     </button>
@@ -716,22 +711,20 @@ export default function CreateErrandPage() {
                                 </div>
 
                                 {showNewContactForm && values.customerId ? (
-                                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
                                         <h3 className="mb-3 text-sm font-semibold text-slate-900">
                                             Ny kontakt
                                         </h3>
 
                                         {newContactError ? (
-                                            <div
-                                                className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                                            <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                                                 {newContactError}
                                             </div>
                                         ) : null}
 
-                                        <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                                             <div>
-                                                <label
-                                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                                                     Förnamn
                                                 </label>
                                                 <input
@@ -743,13 +736,12 @@ export default function CreateErrandPage() {
                                                             firstName: event.target.value,
                                                         }))
                                                     }
-                                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label
-                                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                                                     Efternamn
                                                 </label>
                                                 <input
@@ -761,13 +753,12 @@ export default function CreateErrandPage() {
                                                             lastName: event.target.value,
                                                         }))
                                                     }
-                                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label
-                                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                                                     Telefon
                                                 </label>
                                                 <input
@@ -777,17 +768,19 @@ export default function CreateErrandPage() {
                                                     onChange={(event) =>
                                                         setNewContactDraft((current) => ({
                                                             ...current,
-                                                            phoneNumber: event.target.value.replace(/[^0-9+\-\s()]/g, ""),
+                                                            phoneNumber: event.target.value.replace(
+                                                                /[^0-9+\-\s()]/g,
+                                                                ""
+                                                            ),
                                                         }))
                                                     }
                                                     placeholder="070-123 45 67"
-                                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label
-                                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                                                     E-post
                                                 </label>
                                                 <input
@@ -801,12 +794,12 @@ export default function CreateErrandPage() {
                                                         }))
                                                     }
                                                     placeholder="namn@foretag.se"
-                                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 flex justify-end gap-3">
+                                        <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -819,7 +812,7 @@ export default function CreateErrandPage() {
                                                     });
                                                     setNewContactError(null);
                                                 }}
-                                                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                                                className="w-full rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 sm:w-auto sm:py-2"
                                             >
                                                 Avbryt
                                             </button>
@@ -828,7 +821,7 @@ export default function CreateErrandPage() {
                                                 type="button"
                                                 onClick={() => void handleCreateContact()}
                                                 disabled={isCreatingContact}
-                                                className="rounded-full bg-[#99D0B6] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#86c4a4] disabled:opacity-50"
+                                                className="w-full rounded-full bg-[#99D0B6] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#86c4a4] disabled:opacity-50 sm:w-auto sm:py-2"
                                             >
                                                 {isCreatingContact ? "Sparar..." : "Spara kontakt"}
                                             </button>
@@ -849,7 +842,7 @@ export default function CreateErrandPage() {
                                     name="description"
                                     value={values.description}
                                     onChange={handleFieldChange}
-                                    rows={2}
+                                    rows={3}
                                     placeholder="Kort sammanfattning av ärendet"
                                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400"
                                 />
@@ -862,12 +855,12 @@ export default function CreateErrandPage() {
                         </div>
                     </section>
 
-                    <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <h2 className="mb-2 text-lg font-semibold text-slate-900">
+                    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4">
+                        <h2 className="mb-3 text-lg font-semibold text-slate-900">
                             Ärendedata
                         </h2>
 
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
                             <div>
                                 <label
                                     htmlFor="statusId"
@@ -881,7 +874,7 @@ export default function CreateErrandPage() {
                                     value={values.statusId}
                                     onChange={handleFieldChange}
                                     disabled={isLoadingLookups}
-                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
+                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
                                 >
                                     {isLoadingLookups ? (
                                         <option value="">Laddar statusar...</option>
@@ -889,10 +882,7 @@ export default function CreateErrandPage() {
                                         <option value="">Inga statusar hittades</option>
                                     ) : (
                                         statuses.map((status) => (
-                                            <option
-                                                key={status.statusId}
-                                                value={status.statusId}
-                                            >
+                                            <option key={status.statusId} value={status.statusId}>
                                                 {status.name}
                                             </option>
                                         ))
@@ -913,8 +903,7 @@ export default function CreateErrandPage() {
                                     <span
                                         className="inline-block h-2.5 w-2.5 rounded-full"
                                         style={{
-                                            backgroundColor:
-                                                selectedPriority?.color ?? "#FFFFFF",
+                                            backgroundColor: selectedPriority?.color ?? "#FFFFFF",
                                         }}
                                     />
                                     Prioritet
@@ -925,7 +914,7 @@ export default function CreateErrandPage() {
                                     value={values.priorityId}
                                     onChange={handleFieldChange}
                                     disabled={isLoadingLookups}
-                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
+                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:bg-slate-50 disabled:text-slate-400"
                                 >
                                     {isLoadingLookups ? (
                                         <option value="">Laddar prioriteter...</option>
@@ -964,7 +953,7 @@ export default function CreateErrandPage() {
                                     name="timeSpent"
                                     value={values.timeSpent}
                                     onChange={handleFieldChange}
-                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                                 />
                                 {errors.timeSpent ? (
                                     <p className="mt-1 text-sm text-red-600">
@@ -988,7 +977,7 @@ export default function CreateErrandPage() {
                                     name="agreedPrice"
                                     value={values.agreedPrice}
                                     onChange={handleFieldChange}
-                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                                 />
                                 {errors.agreedPrice ? (
                                     <p className="mt-1 text-sm text-red-600">
@@ -999,37 +988,34 @@ export default function CreateErrandPage() {
                         </div>
                     </section>
 
-                    <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4">
                         <label
                             htmlFor="initialHistoryNote"
-                            className="mb-4 block text-lg font-semibold text-slate-900"
+                            className="mb-2 block text-lg font-semibold text-slate-900"
                         >
                             Första historiknotering
                         </label>
                         <p className="mb-3 text-sm text-slate-500">
-                            Anteckningen sparas som första rad i historiken när
-                            ärendet skapas.
+                            Anteckningen sparas som första rad i historiken när ärendet skapas.
                         </p>
                         <textarea
                             id="initialHistoryNote"
                             name="initialHistoryNote"
                             value={values.initialHistoryNote}
                             onChange={handleFieldChange}
-                            rows={2}
+                            rows={3}
                             placeholder="Skriv en första anteckning..."
                             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none focus:border-slate-400"
                         />
                     </section>
 
-                    <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-lg font-semibold text-slate-900">
-                                Inköp
-                            </h2>
+                    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-4">
+                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <h2 className="text-lg font-semibold text-slate-900">Inköp</h2>
                             <button
                                 type="button"
                                 onClick={handleAddPurchase}
-                                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-0.5 text-sm font-semibold text-[#E85D5D] shadow-[0_2px_6px_rgba(15,23,42,0.12)] transition hover:bg-slate-50"
+                                className="inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-[#E85D5D] shadow-[0_2px_6px_rgba(15,23,42,0.12)] transition hover:bg-slate-50 sm:w-auto"
                             >
                                 <span className="mr-1 text-base leading-none text-slate-700">
                                     +
@@ -1039,9 +1025,7 @@ export default function CreateErrandPage() {
                         </div>
 
                         {errors.purchases ? (
-                            <p className="mb-3 text-sm text-red-600">
-                                {errors.purchases}
-                            </p>
+                            <p className="mb-3 text-sm text-red-600">{errors.purchases}</p>
                         ) : null}
 
                         {values.purchases.length === 0 ? (
@@ -1053,22 +1037,22 @@ export default function CreateErrandPage() {
                                 {values.purchases.map((purchase, index) => (
                                     <div
                                         key={index}
-                                        className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                                        className="rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4"
                                     >
-                                        <div className="mb-4 flex items-center justify-between">
+                                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                             <h3 className="font-medium text-slate-900">
                                                 Inköp {index + 1}
                                             </h3>
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemovePurchase(index)}
-                                                className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
+                                                className="w-full rounded-full border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 sm:w-auto sm:px-3 sm:py-1"
                                             >
                                                 Ta bort
                                             </button>
                                         </div>
 
-                                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                                        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-5">
                                             <div>
                                                 <label
                                                     htmlFor={`purchase-itemName-${index}`}
@@ -1083,11 +1067,11 @@ export default function CreateErrandPage() {
                                                         handlePurchaseChange(
                                                             index,
                                                             "itemName",
-                                                            event.target.value,
+                                                            event.target.value
                                                         )
                                                     }
                                                     placeholder="HDMI kabel"
-                                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
                                                 />
                                             </div>
 
@@ -1108,11 +1092,11 @@ export default function CreateErrandPage() {
                                                         handlePurchaseChange(
                                                             index,
                                                             "quantity",
-                                                            event.target.value,
+                                                            event.target.value
                                                         )
                                                     }
                                                     placeholder="1"
-                                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
                                                 />
                                             </div>
 
@@ -1133,11 +1117,11 @@ export default function CreateErrandPage() {
                                                         handlePurchaseChange(
                                                             index,
                                                             "purchasePrice",
-                                                            event.target.value,
+                                                            event.target.value
                                                         )
                                                     }
                                                     placeholder="0"
-                                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
                                                 />
                                             </div>
 
@@ -1158,11 +1142,11 @@ export default function CreateErrandPage() {
                                                         handlePurchaseChange(
                                                             index,
                                                             "shippingCost",
-                                                            event.target.value,
+                                                            event.target.value
                                                         )
                                                     }
                                                     placeholder="0"
-                                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
                                                 />
                                             </div>
 
@@ -1183,11 +1167,11 @@ export default function CreateErrandPage() {
                                                         handlePurchaseChange(
                                                             index,
                                                             "salePrice",
-                                                            event.target.value,
+                                                            event.target.value
                                                         )
                                                     }
                                                     placeholder="0"
-                                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                                                    className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
                                                 />
                                             </div>
                                         </div>
@@ -1197,11 +1181,11 @@ export default function CreateErrandPage() {
                         )}
                     </section>
 
-                    <div className="flex justify-end gap-3">
+                    <div className="flex flex-col-reverse gap-3 pb-4 sm:flex-row sm:justify-end">
                         <button
                             type="button"
                             onClick={() => navigate("/errands")}
-                            className="rounded-full border border-slate-300 bg-white px-8 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                            className="w-full rounded-full border border-slate-300 bg-white px-8 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 sm:w-auto sm:py-2.5"
                         >
                             Avbryt
                         </button>
@@ -1209,7 +1193,7 @@ export default function CreateErrandPage() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="rounded-full bg-[#79C6A3] px-10 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#69b894] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="w-full rounded-full bg-[#79C6A3] px-10 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#69b894] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                         >
                             {isSubmitting ? "Sparar..." : "Spara ärende"}
                         </button>

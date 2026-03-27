@@ -58,7 +58,7 @@ export default function Header() {
 
             <header
                 className={`${modalOpen ? "flex items-center bg-[#E7F0EC] rounded-xl sm:rounded-none" : "hidden"}
-                fixed left-1/2 top-20 bottom-24 w-[88%] max-w-[340px] -translate-x-1/2 z-50 sm:static sm:flex sm:w-full sm:bg-[#001A31]
+                fixed top-6 right-10 bottom-22 left-10 z-50 sm:static sm:flex sm:w-full sm:bg-[#001A31]
                 justify-center text-[5vw] sm:text-[2vw] md:text-[1.5vw] lg:text-[1vw] border sm:border-0 shadow-lg border-black/10 border-b-2`}
             >
                 <nav className="font-poppins sm:flex sm:h-16 items-center justify-center text-[#F7F7F7]">
