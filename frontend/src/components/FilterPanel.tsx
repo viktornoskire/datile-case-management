@@ -1,12 +1,18 @@
 import type { ReactNode } from "react";
-import type { ErrandAssignee, ErrandCustomer, ErrandFilters } from "../types/errands";
+import {
+    errandPriorityOptions,
+    errandStatusOptions,
+    type ErrandAssignee,
+    type ErrandFilters,
+} from "../types/errands";
+import type { CustomerLookup } from "../api/LookupsApi";
 
 type FilterPanelProps = {
     filters: ErrandFilters;
     onChange: (next: ErrandFilters) => void;
     onClear: () => void;
     onClose: () => void;
-    customers: ErrandCustomer[];
+    customers: CustomerLookup[];
     assignees: ErrandAssignee[];
 };
 
@@ -14,26 +20,6 @@ type ChipOption = {
     label: string;
     value: string;
 };
-
-const statusOptions: ChipOption[] = [
-    { label: "Nytt", value: "Nytt" },
-    { label: "Pågående", value: "Pågående" },
-    { label: "Väntar", value: "Väntar" },
-    { label: "Beställt", value: "Beställt" },
-    { label: "Planerat", value: "Planerat" },
-    { label: "Väntar på fakturering", value: "Väntar på fakturering" },
-    { label: "Klar ej fakt.", value: "Klar ej fakt." },
-    { label: "Stängt", value: "Stängt" },
-    { label: "Bevakning", value: "Bevakning" },
-];
-
-const priorityOptions: ChipOption[] = [
-    { label: "PANIK", value: "PANIK HÖG" },
-    { label: "Hög", value: "HÖG" },
-    { label: "Normal", value: "Normal" },
-    { label: "Låg", value: "Låg" },
-    { label: "Bevakning", value: "BEVAKNING" },
-];
 
 const sortOptions = [
     { value: "date", label: "Datum" },
@@ -43,7 +29,7 @@ const sortOptions = [
 
 type ChipGroupProps = {
     label: string;
-    options: ChipOption[];
+    options: readonly ChipOption[];
     selectedValues: string[];
     onToggle: (value: string) => void;
 };
@@ -95,7 +81,7 @@ function SelectField({ value, onChange, children }: SelectFieldProps) {
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-1.5 pr-10 text-center text-sm shadow-sm outline-none"
+                className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-1.5 pr-10 text-left text-sm shadow-sm outline-none"
             >
                 {children}
             </select>
@@ -139,7 +125,13 @@ export function FilterPanel({
                     </label>
                     <SelectField
                         value={filters.sortBy}
-                        onChange={(value) => onChange({ ...filters, sortBy: value })}
+                        onChange={(value) =>
+                            onChange({
+                                ...filters,
+                                sortBy: value,
+                                page: 0,
+                            })
+                        }
                     >
                         {sortOptions.map((option) => (
                             <option key={option.value} value={option.value}>
@@ -155,7 +147,13 @@ export function FilterPanel({
                     </label>
                     <SelectField
                         value={filters.customerId}
-                        onChange={(value) => onChange({ ...filters, customerId: value })}
+                        onChange={(value) =>
+                            onChange({
+                                ...filters,
+                                customerId: value,
+                                page: 0,
+                            })
+                        }
                     >
                         <option value="">Kund</option>
                         {customers.map((customer) => (
@@ -172,7 +170,13 @@ export function FilterPanel({
                     </label>
                     <SelectField
                         value={filters.assigneeId}
-                        onChange={(value) => onChange({ ...filters, assigneeId: value })}
+                        onChange={(value) =>
+                            onChange({
+                                ...filters,
+                                assigneeId: value,
+                                page: 0,
+                            })
+                        }
                     >
                         <option value="">Ansvarig</option>
                         {assignees.map((assignee) => (
@@ -185,12 +189,13 @@ export function FilterPanel({
 
                 <ChipGroup
                     label="Prio:"
-                    options={priorityOptions}
+                    options={errandPriorityOptions}
                     selectedValues={filters.priorities}
                     onToggle={(value) =>
                         onChange({
                             ...filters,
                             priorities: toggleArrayValue(filters.priorities, value),
+                            page: 0,
                         })
                     }
                 />
@@ -199,12 +204,13 @@ export function FilterPanel({
             <div className="mb-4">
                 <ChipGroup
                     label="Status:"
-                    options={statusOptions}
+                    options={errandStatusOptions}
                     selectedValues={filters.statuses}
                     onToggle={(value) =>
                         onChange({
                             ...filters,
                             statuses: toggleArrayValue(filters.statuses, value),
+                            page: 0,
                         })
                     }
                 />

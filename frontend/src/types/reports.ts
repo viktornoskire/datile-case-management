@@ -77,6 +77,18 @@ export type ReportFilters = {
     size: number;
 };
 
+const REPORT_FILTERS_STORAGE_KEY = "datile:report-filters";
+
+const allowedSortValues: ReportSortBy[] = [
+    "customer",
+    "contact",
+    "title",
+    "status",
+    "priority",
+    "assignee",
+    "timeSpent",
+];
+
 export const reportSortOptions: Array<{ value: ReportSortBy; label: string }> = [
     {value: "customer", label: "Kund"},
     {value: "contact", label: "Namn"},
@@ -108,4 +120,82 @@ export const createInitialReportFilters = (): ReportFilters => {
         page: 0,
         size: 20,
     };
+};
+
+const isValidSortBy = (value: unknown): value is ReportSortBy => {
+    return typeof value === "string" && allowedSortValues.includes(value as ReportSortBy);
+};
+
+const isValidNumber = (value: unknown): value is number => {
+    return typeof value === "number" && Number.isFinite(value);
+};
+
+const isValidNumberArray = (value: unknown): value is number[] => {
+    return Array.isArray(value) && value.every((item) => isValidNumber(item));
+};
+
+const isValidDateString = (value: unknown): value is string => {
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+};
+
+export const sanitizeStoredReportFilters = (value: unknown): ReportFilters => {
+    const fallback = createInitialReportFilters();
+
+    if (!value || typeof value !== "object") {
+        return fallback;
+    }
+
+    const raw = value as Partial<ReportFilters>;
+
+    return {
+        dateFrom: isValidDateString(raw.dateFrom) ? raw.dateFrom : fallback.dateFrom,
+        dateTo: isValidDateString(raw.dateTo) ? raw.dateTo : fallback.dateTo,
+        customerId: isValidNumber(raw.customerId) ? raw.customerId : undefined,
+        assigneeId: isValidNumber(raw.assigneeId) ? raw.assigneeId : undefined,
+        statusIds: isValidNumberArray(raw.statusIds) ? raw.statusIds : [],
+        priorityIds: isValidNumberArray(raw.priorityIds) ? raw.priorityIds : [],
+        sortBy: isValidSortBy(raw.sortBy) ? raw.sortBy : fallback.sortBy,
+        page:
+            typeof raw.page === "number" && Number.isInteger(raw.page) && raw.page >= 0
+                ? raw.page
+                : fallback.page,
+        size:
+            typeof raw.size === "number" && Number.isInteger(raw.size) && raw.size > 0
+                ? raw.size
+                : fallback.size,
+    };
+};
+
+export const loadSavedReportFilters = (): ReportFilters => {
+    try {
+        const raw = localStorage.getItem(REPORT_FILTERS_STORAGE_KEY);
+
+        if (!raw) {
+            return createInitialReportFilters();
+        }
+
+        return sanitizeStoredReportFilters(JSON.parse(raw));
+    } catch {
+        return createInitialReportFilters();
+    }
+};
+
+export const saveReportFilters = (filters: ReportFilters) => {
+    try {
+        localStorage.setItem(REPORT_FILTERS_STORAGE_KEY, JSON.stringify(filters));
+    } catch {
+        // ignore storage errors
+    }
+};
+
+export const clearSavedReportFilters = () => {
+    try {
+        localStorage.removeItem(REPORT_FILTERS_STORAGE_KEY);
+    } catch {
+        // ignore storage errors
+    }
 };

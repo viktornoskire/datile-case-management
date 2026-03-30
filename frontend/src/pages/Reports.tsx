@@ -11,7 +11,10 @@ import {ReportFilterPanel} from "../components/ReportFilterPanel";
 import {ReportListRow} from "../components/ReportListRow";
 import {ReportPagination} from "../components/ReportPagination";
 import {
+    clearSavedReportFilters,
     createInitialReportFilters,
+    loadSavedReportFilters,
+    saveReportFilters,
     type ReportFilters,
     type ReportsResponse,
 } from "../types/reports";
@@ -22,7 +25,7 @@ type FilterOption = {
 };
 
 export default function Reports() {
-    const [filters, setFilters] = useState<ReportFilters>(createInitialReportFilters());
+    const [filters, setFilters] = useState<ReportFilters>(() => loadSavedReportFilters());
     const [data, setData] = useState<ReportsResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -112,6 +115,62 @@ export default function Reports() {
     }, []);
 
     useEffect(() => {
+        if (
+            customerOptions.length === 0 &&
+            assigneeOptions.length === 0 &&
+            statusOptions.length === 0 &&
+            priorityOptions.length === 0
+        ) {
+            return;
+        }
+
+        setFilters((current) => {
+            const nextCustomerId =
+                current.customerId !== undefined &&
+                customerOptions.some((option) => option.value === current.customerId)
+                    ? current.customerId
+                    : undefined;
+
+            const nextAssigneeId =
+                current.assigneeId !== undefined &&
+                assigneeOptions.some((option) => option.value === current.assigneeId)
+                    ? current.assigneeId
+                    : undefined;
+
+            const nextStatusIds = current.statusIds.filter((statusId) =>
+                statusOptions.some((option) => option.value === statusId),
+            );
+
+            const nextPriorityIds = current.priorityIds.filter((priorityId) =>
+                priorityOptions.some((option) => option.value === priorityId),
+            );
+
+            const hasChanged =
+                nextCustomerId !== current.customerId ||
+                nextAssigneeId !== current.assigneeId ||
+                nextStatusIds.length !== current.statusIds.length ||
+                nextPriorityIds.length !== current.priorityIds.length;
+
+            if (!hasChanged) {
+                return current;
+            }
+
+            return {
+                ...current,
+                customerId: nextCustomerId,
+                assigneeId: nextAssigneeId,
+                statusIds: nextStatusIds,
+                priorityIds: nextPriorityIds,
+                page: 0,
+            };
+        });
+    }, [customerOptions, assigneeOptions, statusOptions, priorityOptions]);
+
+    useEffect(() => {
+        saveReportFilters(filters);
+    }, [filters]);
+
+    useEffect(() => {
         let alive = true;
 
         const run = async () => {
@@ -156,6 +215,7 @@ export default function Reports() {
     };
 
     const handleClear = () => {
+        clearSavedReportFilters();
         setFilters(createInitialReportFilters());
         setExpandedRows(new Set());
     };
