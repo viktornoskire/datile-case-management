@@ -1,5 +1,16 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Errands, Reports, Customers, Users, Settings, PingPage, Login, CreateErrandPage, Purchases} from "../pages";
+import {
+    Errands,
+    Reports,
+    Customers,
+    Users,
+    Settings,
+    PingPage,
+    Login,
+    CreateErrandPage,
+    Purchases,
+    NotFound
+} from "../pages";
 import { ProtectedRoutes } from "./ProtectedRoutes.tsx";
 
 export default function AppRoutes() {
@@ -16,6 +27,7 @@ export default function AppRoutes() {
                 <Route path="/purchases" element={<Purchases/>}/>
                 <Route path="/users" element={<Users/>} />
                 <Route path="/settings" element={<Settings/>} />
+                <Route path="*" element={<NotFound/>} />
             </Route>
         </Routes>
     )

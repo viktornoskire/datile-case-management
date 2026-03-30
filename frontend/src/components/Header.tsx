@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
 import type { NavLinkRenderProps } from "react-router-dom";
-import { useState, useEffect } from "react";
+import {useState, useEffect, useContext} from "react";
 import {apiClient} from "../services/apiClient.ts";
+import {AuthContext} from "./AuthProvider.tsx";
 
 export default function Header() {
     // Reusable styling for nav links
@@ -47,6 +48,18 @@ export default function Header() {
         };
     }, []);
 
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+    const authContext = useContext(AuthContext);
+
+    useEffect(() => {
+        if (authContext?.role === "ADMIN") {
+            setIsAdmin(true);
+        } else {
+            setIsAdmin(false);
+        }
+    }, []);
+
     return (
         <>
             {modalOpen && (
@@ -67,7 +80,11 @@ export default function Header() {
                     </NavLink>
 
                     <NavLink to={"/errands"} className={navLinkClass} onClick={toggleModal}>ÄRENDEN</NavLink>
-                    <NavLink to={"/reports"} className={navLinkClass} onClick={toggleModal}>RAPPORTER</NavLink>
+
+                    {isAdmin ? (
+                        <NavLink to={"/reports"} className={navLinkClass} onClick={toggleModal}>RAPPORTER</NavLink>
+                    ) : null}
+
                     <NavLink to={"/customers"} className={navLinkClass} onClick={toggleModal}>KUNDER</NavLink>
                     <NavLink to={"/purchases"} className={navLinkClass} onClick={toggleModal}>INKÖP</NavLink>
                     <NavLink to={"/users"} className={navLinkClass} onClick={toggleModal}>ANVÄNDARE</NavLink>
