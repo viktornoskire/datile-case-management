@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { apiClient } from "../services/apiClient";
 
 type AuthContextType = {
+    name: string | null;
     user: string | null;
     role: "ADMIN" | "USER" | null
     loading: boolean;
@@ -11,6 +12,7 @@ type AuthContextType = {
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const [name, setName] = useState<string | null>(null);
     const [user, setUser] = useState<string | null>(null);
     const [role, setRole] = useState<"ADMIN" | "USER" | null>(null);
     const [loading, setLoading] = useState(true);
@@ -19,10 +21,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
 
         try {
-            const data = await apiClient.get<{ email: string; role: "ADMIN" | "USER" }>("/api/auth/me");
+            const data = await apiClient.get<{ name: string; email: string; role: "ADMIN" | "USER" }>("/api/auth/me");
+            setName(data.name);
             setUser(data.email);
             setRole(data.role);
         } catch (err) {
+            setName(null);
             setUser(null);
             setRole(null);
         }
@@ -35,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, role, loading, refreshAuth }}>
+        <AuthContext.Provider value={{ name, user, role, loading, refreshAuth }}>
             {children}
         </AuthContext.Provider>
     );

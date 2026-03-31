@@ -20,6 +20,7 @@ export type UpdateErrandRequest = {
 
 export type AddHistoryEntryRequest = {
     description: string;
+    name: string | null;
 };
 
 export type AddPurchaseRequest = {

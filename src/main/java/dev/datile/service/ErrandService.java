@@ -261,7 +261,7 @@ public class ErrandService {
         ErrandHistoryEntry entry = new ErrandHistoryEntry();
         entry.setErrand(errand);
         entry.setDescription(request.description().trim());
-        entry.setVerifiedName("System");
+        entry.setVerifiedName(request.name());
         entry.setCreatedAt(Timestamp.from(Instant.now()));
 
         historyRepo.save(entry);

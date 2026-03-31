@@ -14,6 +14,7 @@ import {
     type PriorityLookup,
     type StatusLookup,
 } from "../api/LookupsApi";
+import {useAuth} from "../hooks/useAuth.ts";
 
 type PurchaseFormValue = {
     itemName: string;
@@ -457,6 +458,14 @@ export default function CreateErrandPage() {
         }
     };
 
+    const [name, setName] = useState<string | null>("");
+
+    const auth = useAuth();
+
+    useEffect(() => {
+        return setName(auth?.name);
+    }, []);
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -493,9 +502,19 @@ export default function CreateErrandPage() {
 
             if (values.initialHistoryNote.trim()) {
                 try {
-                    await addErrandHistoryEntry(createdErrand.errandId, {
-                        description: values.initialHistoryNote.trim(),
-                    });
+
+                    if (name === null) {
+                        setSubmitWarning(
+                            "Ärendet skapades, men första historiknoteringen kunde inte sparas."
+                        );
+                    } else {
+                        const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+
+                        await addErrandHistoryEntry(createdErrand.errandId, {
+                            description: values.initialHistoryNote.trim(),
+                            name: capitalizedName
+                        });
+                    }
                 } catch {
                     setSubmitWarning(
                         "Ärendet skapades, men första historiknoteringen kunde inte sparas."

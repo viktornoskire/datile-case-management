@@ -19,6 +19,7 @@ import {
 } from "../api/LookupsApi";
 import type { ErrandDetails } from "../types/errands";
 import { AddPurchaseForm } from "./AddPurchaseForm";
+import {useAuth} from "../hooks/useAuth.ts";
 
 type EditErrandFormProps = {
     errand: ErrandDetails;
@@ -269,6 +270,14 @@ export const EditErrandForm = ({
         setPurchaseIdToDelete(null);
     };
 
+    const [name, setName] = useState<string | null>("");
+
+    const auth = useAuth();
+
+    useEffect(() => {
+        return setName(auth?.name);
+    }, []);
+
     const handleAddHistoryEntry = async () => {
         setSubmitError("");
 
@@ -279,12 +288,17 @@ export const EditErrandForm = ({
         try {
             setIsAddingHistory(true);
 
-            const updatedErrand = await addErrandHistoryEntry(errand.errandId, {
-                description: newHistoryEntry.trim(),
-            });
+            if (name !== null) {
+                const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 
-            setHistoryItems(updatedErrand.history ?? []);
-            setNewHistoryEntry("");
+                const updatedErrand = await addErrandHistoryEntry(errand.errandId, {
+                    description: newHistoryEntry.trim(),
+                    name: capitalizedName
+                });
+
+                setHistoryItems(updatedErrand.history ?? []);
+                setNewHistoryEntry("");
+            }
         } catch (error) {
             if (error instanceof Error && error.message.trim()) {
                 setSubmitError(`Kunde inte lägga till historikrad. ${error.message}`);

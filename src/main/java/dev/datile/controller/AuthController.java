@@ -106,7 +106,10 @@ public class AuthController {
                 .map(a -> a.getAuthority().replace("ROLE_", ""))
                 .orElse("USER");
 
+        String name = userRepository.findNameByEmail(email).getName();
+
         return ResponseEntity.ok(Map.of(
+                "name", name,
                 "email", email,
                 "role", role
         ));
