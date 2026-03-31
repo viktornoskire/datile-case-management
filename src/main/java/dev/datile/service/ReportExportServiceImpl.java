@@ -4,8 +4,12 @@ import dev.datile.dto.reports.ReportFilterRequestDto;
 import dev.datile.dto.reports.ReportRowDto;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
+import java.time.temporal.TemporalAccessor;
 import java.util.List;
+import java.util.Locale;
 
 /* Takes finished report data and makes a file */
 
@@ -48,7 +52,36 @@ public class ReportExportServiceImpl implements ReportExportService {
             return "\"\"";
         }
 
-        String escaped = String.valueOf(value).replace("\"", "\"\"");
+        String formatted = formatValue(value);
+        String escaped = formatted.replace("\"", "\"\"");
         return "\"" + escaped + "\"";
+    }
+
+    private String formatValue(Object value) {
+        if (value instanceof BigDecimal bigDecimal) {
+            return formatDecimal(bigDecimal);
+        }
+
+        if (value instanceof Double doubleValue) {
+            return formatDecimal(BigDecimal.valueOf(doubleValue));
+        }
+
+        if (value instanceof Float floatValue) {
+            return formatDecimal(BigDecimal.valueOf(floatValue.doubleValue()));
+        }
+
+        if (value instanceof TemporalAccessor) {
+            return String.valueOf(value);
+        }
+
+        return String.valueOf(value);
+    }
+
+    private String formatDecimal(BigDecimal value) {
+        NumberFormat format = NumberFormat.getNumberInstance(new Locale("sv", "SE"));
+        format.setGroupingUsed(false);
+        format.setMinimumFractionDigits(0);
+        format.setMaximumFractionDigits(2);
+        return format.format(value);
     }
 }
