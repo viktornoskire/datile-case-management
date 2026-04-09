@@ -3,6 +3,7 @@ package dev.datile.dto.errands;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.Instant;
 import java.util.List;
 
 public record CreateErrandDto(
@@ -15,6 +16,7 @@ public record CreateErrandDto(
         @NotNull Long contactId,
         @NotNull Double timeSpent,
         @NotNull Double agreedPrice,
+        @NotNull Instant createdAt,
         List<CreatePurchaseDto> purchases
 ) {
 }

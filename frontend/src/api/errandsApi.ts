@@ -86,7 +86,18 @@ export const fetchErrands = (params: {
 export const createErrand = (data: CreateErrandRequest) =>
     apiClient.post<CreateErrandResponse>("/api/errands", data);
 
-export const updateErrand = (id: number, data: UpdateErrandRequest) =>
+export const updateErrand = (id: number, data: {
+    title: string;
+    description: string;
+    statusId: number;
+    priorityId: number;
+    assigneeId: null | number;
+    customerId: null | number;
+    contactId: null | number;
+    timeSpent: null | number;
+    agreedPrice: null | number;
+    createdAt: string | undefined
+}) =>
     apiClient.put<ErrandDetails>(`/api/errands/${id}`, data);
 
 export const addErrandHistoryEntry = (

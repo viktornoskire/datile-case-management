@@ -1,6 +1,7 @@
 package dev.datile.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -142,5 +143,9 @@ public class Errand {
 
     public void setTimeSpent(BigDecimal timeSpent) {
         this.timeSpent = timeSpent;
+    }
+
+    public void setCreatedAt(@NotNull Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

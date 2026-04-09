@@ -36,6 +36,7 @@ type FormValues = {
     agreedPrice: string;
     initialHistoryNote: string;
     purchases: PurchaseFormValue[];
+    createdAt: string;
 };
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
@@ -52,6 +53,7 @@ const initialValues: FormValues = {
     agreedPrice: "0",
     initialHistoryNote: "",
     purchases: [],
+    createdAt: new Date().toISOString().slice(0, 10),
 };
 
 const emptyPurchase = (): PurchaseFormValue => ({
@@ -491,6 +493,9 @@ export default function CreateErrandPage() {
                 contactId: Number(values.contactId),
                 timeSpent: Number(values.timeSpent),
                 agreedPrice: Number(values.agreedPrice),
+                createdAt: values.createdAt
+                    ? new Date(values.createdAt + "T12:00:00").toISOString()
+                    : undefined,
                 purchases: values.purchases.map((purchase) => ({
                     itemName: purchase.itemName.trim(),
                     quantity: Number(purchase.quantity),
@@ -847,6 +852,22 @@ export default function CreateErrandPage() {
                                         </div>
                                     </div>
                                 ) : null}
+                            </div>
+                            <div>
+                                <label
+                                    htmlFor="createdAt"
+                                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                                >
+                                    Datum
+                                </label>
+                                <input
+                                    id="createdAt"
+                                    type="date"
+                                    name="createdAt"
+                                    value={values.createdAt}
+                                    onChange={handleFieldChange}
+                                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                />
                             </div>
 
                             <div className="md:col-span-2 xl:col-span-4">

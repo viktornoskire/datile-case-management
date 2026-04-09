@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 /* Editable fields */
 
@@ -22,6 +23,8 @@ public record UpdateErrandDto(
 
         @NotNull(message = "Priority is required")
         Long priorityId,
+
+        @NotNull Instant createdAt,
 
         Long assigneeId,
         Long customerId,

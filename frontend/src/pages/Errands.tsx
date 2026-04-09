@@ -66,7 +66,8 @@ export default function Errands() {
         setModalMode("view");
     };
 
-    const handleErrandUpdated = (updatedErrand: ErrandDetails) => {
+    const handleErrandUpdated = async (updatedErrand: ErrandDetails) => {
+        // 1. instant UI update
         setData((current) => {
             if (!current) return current;
 
@@ -74,21 +75,14 @@ export default function Errands() {
                 ...current,
                 errands: current.errands.map((errand) =>
                     errand.errandId === updatedErrand.errandId
-                        ? {
-                            ...errand,
-                            title: updatedErrand.title,
-                            description: updatedErrand.description,
-                            status: updatedErrand.status,
-                            priority: updatedErrand.priority,
-                            assignee: updatedErrand.assignee,
-                            customer: updatedErrand.customer,
-                            contact: updatedErrand.contact,
-                            historyPreview: updatedErrand.history?.slice(0, 2) ?? [],
-                        }
-                        : errand,
+                        ? { ...errand, ...updatedErrand }
+                        : errand
                 ),
             };
         });
+
+        // 2. sync with backend
+        await loadErrands();
     };
 
     const getVisiblePages = (): (number | "...")[] => {
@@ -206,41 +200,30 @@ export default function Errands() {
         return () => window.clearTimeout(timeoutId);
     }, [filters.q]);
 
+    const loadErrands = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const res = await fetchErrands({
+                ...buildErrandFilterParams({
+                    ...filters,
+                    q: debouncedQ,
+                }),
+                sortBy: filters.sortBy,
+                sortDir: "desc",
+            });
+
+            setData(res);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Unknown error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        let alive = true;
-
-        const run = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const res = await fetchErrands({
-                    ...buildErrandFilterParams({
-                        ...filters,
-                        q: debouncedQ,
-                    }),
-                    sortBy: filters.sortBy,
-                    sortDir: "desc",
-                });
-
-                if (alive) {
-                    setData(res);
-                }
-            } catch (e) {
-                if (!alive) return;
-                setError(e instanceof Error ? e.message : "Unknown error");
-            } finally {
-                if (alive) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        void run();
-
-        return () => {
-            alive = false;
-        };
+        void loadErrands();
     }, [
         filters.page,
         filters.size,
