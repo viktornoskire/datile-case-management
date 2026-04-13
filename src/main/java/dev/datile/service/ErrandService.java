@@ -183,6 +183,10 @@ public class ErrandService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ogiltigt contactId"));
         }
 
+        if (request.createdAt() != null) {
+            errand.setCreatedAt(request.createdAt());
+        }
+
         errand.setTitle(request.title().trim());
         errand.setDescription(request.description() != null ? request.description().trim() : null);
         errand.setStatus(status);
@@ -217,12 +221,16 @@ public class ErrandService {
         Contact contact = contactRepo.findById(request.contactId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ogiltigt contactId"));
 
+        Instant createdAt = request.createdAt() != null
+                ? request.createdAt()
+                : Instant.now();
+
         Errand errand = new Errand(
                 request.title().trim(),
                 request.description() != null ? request.description().trim() : null,
                 status,
                 priority,
-                Instant.now()
+                createdAt
         );
 
         errand.setAssignee(assignee);

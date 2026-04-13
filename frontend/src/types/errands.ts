@@ -16,6 +16,7 @@ export type CreateErrandRequest = {
     priorityId: number;
     timeSpent: number;
     agreedPrice: number;
+    createdAt?: string;
     purchases: CreateErrandPurchaseRequest[];
 };
 

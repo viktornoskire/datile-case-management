@@ -129,6 +129,10 @@ export const EditErrandForm = ({
     const [lookupError, setLookupError] = useState("");
     const [submitError, setSubmitError] = useState("");
 
+    const [createdAt, setCreatedAt] = useState(
+        formatDate(errand.createdAt)
+    );
+
     const handleEditPurchaseClick = (purchase: PurchaseItem) => {
         setSubmitError("");
         setIsAddingPurchase(false);
@@ -152,6 +156,7 @@ export const EditErrandForm = ({
         setPurchaseIdToDelete(null);
         setPurchaseToEdit(null);
         setSubmitError("");
+        setCreatedAt(formatDate(errand.createdAt));
     }, [errand, startWithPurchaseFormOpen]);
 
     useEffect(() => {
@@ -355,9 +360,14 @@ export const EditErrandForm = ({
                 contactId: contactId === "" ? null : Number(contactId),
                 timeSpent: parsedTimeSpent,
                 agreedPrice: parsedAgreedPrice,
+                createdAt: createdAt
+                    ? new Date(createdAt + "T00:00:00").toISOString()
+                    : undefined,
             });
 
             onSaved(updatedErrand);
+
+            onCancel();
         } catch (error) {
             if (error instanceof Error && error.message.trim()) {
                 setSubmitError(`Kunde inte spara ärendet. ${error.message}`);
@@ -458,9 +468,10 @@ export const EditErrandForm = ({
                     </label>
                     <input
                         id="date"
-                        value={formatDate(errand.createdAt)}
-                        disabled
-                        className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400"
+                        type="date"
+                        value={createdAt}
+                        onChange={(e) => setCreatedAt(e.target.value)}
+                        className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                     />
                 </div>
 

@@ -66,29 +66,63 @@ export default function Errands() {
         setModalMode("view");
     };
 
-    const handleErrandUpdated = (updatedErrand: ErrandDetails) => {
+    const handleErrandUpdated = async (updatedErrand: ErrandDetails) => {
         setData((current) => {
             if (!current) return current;
 
+            // 1. update errand
+            const updatedErrands = current.errands.map((errand) =>
+                errand.errandId === updatedErrand.errandId
+                    ? { ...errand, ...updatedErrand }
+                    : errand
+            );
+
+            // 2. apply filters AGAIN (this is the missing piece)
+            const filteredErrands = updatedErrands.filter((errand) => {
+                // status (compare NAME)
+                if (
+                    filters.statuses.length > 0 &&
+                    !filters.statuses.includes(errand.status.name)
+                ) {
+                    return false;
+                }
+
+                // priority (compare NAME)
+                if (
+                    filters.priorities.length > 0 &&
+                    !filters.priorities.includes(errand.priority.name)
+                ) {
+                    return false;
+                }
+
+                // assignee (compare ID)
+                if (
+                    filters.assigneeId &&
+                    String(errand.assignee?.assigneeId ?? "") !== filters.assigneeId
+                ) {
+                    return false;
+                }
+
+                // customer (compare ID)
+                if (
+                    filters.customerId &&
+                    String(errand.customer?.customerId ?? "") !== filters.customerId
+                ) {
+                    return false;
+                }
+
+                return true;
+            });
+
             return {
                 ...current,
-                errands: current.errands.map((errand) =>
-                    errand.errandId === updatedErrand.errandId
-                        ? {
-                            ...errand,
-                            title: updatedErrand.title,
-                            description: updatedErrand.description,
-                            status: updatedErrand.status,
-                            priority: updatedErrand.priority,
-                            assignee: updatedErrand.assignee,
-                            customer: updatedErrand.customer,
-                            contact: updatedErrand.contact,
-                            historyPreview: updatedErrand.history?.slice(0, 2) ?? [],
-                        }
-                        : errand,
-                ),
+                errands: filteredErrands,
+                totalElements: filteredErrands.length,
             };
         });
+
+        // ❗ OPTIONAL: remove this if you want purely instant UI
+        // await loadErrands();
     };
 
     const getVisiblePages = (): (number | "...")[] => {
@@ -120,6 +154,70 @@ export default function Errands() {
         pages.push(total - 1);
 
         return pages;
+    };
+
+    const handleBulkStatusUpdate = (fromStatusId: number, toStatusId: number) => {
+        setData((current) => {
+            if (!current) return current;
+
+            const updatedErrands = current.errands.map((errand) => {
+                if (errand.status.statusId === fromStatusId) {
+                    return {
+                        ...errand,
+                        status: {
+                            ...errand.status,
+                            statusId: toStatusId,
+                            name:
+                                statuses.find((s) => s.statusId === toStatusId)?.name ??
+                                errand.status.name,
+                        },
+                    };
+                }
+                return errand;
+            });
+
+            // 🔥 reuse SAME filter logic
+            const filteredErrands = updatedErrands.filter((errand) => {
+                if (
+                    filters.statuses.length > 0 &&
+                    !filters.statuses.includes(errand.status.name)
+                ) {
+                    return false;
+                }
+
+                if (
+                    filters.priorities.length > 0 &&
+                    !filters.priorities.includes(errand.priority.name)
+                ) {
+                    return false;
+                }
+
+                if (
+                    filters.assigneeId &&
+                    String(errand.assignee?.assigneeId ?? "") !== filters.assigneeId
+                ) {
+                    return false;
+                }
+
+                if (
+                    filters.customerId &&
+                    String(errand.customer?.customerId ?? "") !== filters.customerId
+                ) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            return {
+                ...current,
+                errands: filteredErrands,
+                totalElements: filteredErrands.length,
+            };
+        });
+
+        // optional background sync (recommended)
+        loadErrands();
     };
 
     useEffect(() => {
@@ -206,41 +304,30 @@ export default function Errands() {
         return () => window.clearTimeout(timeoutId);
     }, [filters.q]);
 
+    const loadErrands = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const res = await fetchErrands({
+                ...buildErrandFilterParams({
+                    ...filters,
+                    q: debouncedQ,
+                }),
+                sortBy: filters.sortBy,
+                sortDir: "desc",
+            });
+
+            setData(res);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Unknown error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        let alive = true;
-
-        const run = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const res = await fetchErrands({
-                    ...buildErrandFilterParams({
-                        ...filters,
-                        q: debouncedQ,
-                    }),
-                    sortBy: filters.sortBy,
-                    sortDir: "desc",
-                });
-
-                if (alive) {
-                    setData(res);
-                }
-            } catch (e) {
-                if (!alive) return;
-                setError(e instanceof Error ? e.message : "Unknown error");
-            } finally {
-                if (alive) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        void run();
-
-        return () => {
-            alive = false;
-        };
+        void loadErrands();
     }, [
         filters.page,
         filters.size,
@@ -534,17 +621,16 @@ export default function Errands() {
                     <BulkStatusModal
                         statuses={statuses}
                         onClose={() => setIsBulkModalOpen(false)}
-                        onSuccess={() => {
-                            setFilters((prev) => ({
-                                ...prev,
-                                page: 0, // optional: reset to first page
-                            }));
+                        onSuccess={({ fromStatusId, toStatusId }) => {
+                            handleBulkStatusUpdate(fromStatusId, toStatusId);
                         }}
                     />
                 )}
             </div>
         </div>
     );
+
+
 
     function BulkStatusModal({
                                  statuses,
@@ -553,10 +639,10 @@ export default function Errands() {
                              }: {
         statuses: { statusId: number; name: string }[];
         onClose: () => void;
-        onSuccess: () => void;
+        onSuccess: (data: { fromStatusId: number; toStatusId: number }) => void;
     }) {
-        const [fromStatus, setFromStatus] = useState<number | "">("");
-        const [toStatus, setToStatus] = useState<number | "">("");
+        const [fromStatus, setFromStatus] = useState<number | null>(null);
+        const [toStatus, setToStatus] = useState<number | null>(null);
         const [count, setCount] = useState<number | null>(null);
         const [step, setStep] = useState<"select" | "confirm">("select");
 
@@ -564,7 +650,7 @@ export default function Errands() {
         const [loading, setLoading] = useState(false);
 
         async function handleCheck() {
-            if (!fromStatus || !toStatus) {
+            if (fromStatus == null || toStatus == null) {
                 setError("Välj båda statusar...");
                 return;
             }
@@ -601,7 +687,12 @@ export default function Errands() {
                     toStatusId: toStatus,
                 });
 
-                onSuccess();
+                if (fromStatus != null && toStatus != null) {
+                    onSuccess({
+                        fromStatusId: fromStatus,
+                        toStatusId: toStatus,
+                    });
+                }
                 onClose();
             } catch {
                 setError("Kunde inte uppdatera...");
@@ -631,7 +722,7 @@ export default function Errands() {
                             <div>
                                 <label className="text-sm text-slate-600">Från</label>
                                 <select
-                                    value={fromStatus}
+                                    value={fromStatus ?? ""}
                                     onChange={(e) => setFromStatus(Number(e.target.value))}
                                     className="mt-1 w-full rounded-full border px-3 py-2 text-sm"
                                 >
@@ -648,7 +739,7 @@ export default function Errands() {
                             <div>
                                 <label className="text-sm text-slate-600">Till</label>
                                 <select
-                                    value={toStatus}
+                                    value={toStatus ?? ""}
                                     onChange={(e) => setToStatus(Number(e.target.value))}
                                     className="mt-1 w-full rounded-full border px-3 py-2 text-sm"
                                 >
