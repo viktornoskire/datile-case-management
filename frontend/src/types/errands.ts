@@ -108,6 +108,7 @@ export type ErrandDetails = {
     contact: ErrandContact | null;
     timeSpent: number | null;
     agreedPrice: number | null;
+    attachments: ErrandAttachment[];
 };
 
 export type ErrandPurchase = {
@@ -142,6 +143,12 @@ export const initialErrandFilters: ErrandFilters = {
     q: "",
     page: 0,
     size: 20,
+};
+
+export type ErrandAttachment = {
+    id: number;
+    fileName: string;
+    contentType: string;
 };
 
 const ERRAND_FILTERS_STORAGE_KEY = "datile:errand-filters";

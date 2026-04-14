@@ -10,14 +10,7 @@ import dev.datile.domain.Purchase;
 import dev.datile.domain.Status;
 import dev.datile.dto.errands.*;
 import dev.datile.mapper.ErrandMapper;
-import dev.datile.repository.AssigneeRepository;
-import dev.datile.repository.ContactRepository;
-import dev.datile.repository.CustomerRepository;
-import dev.datile.repository.ErrandHistoryRepository;
-import dev.datile.repository.ErrandRepository;
-import dev.datile.repository.PriorityRepository;
-import dev.datile.repository.PurchaseRepository;
-import dev.datile.repository.StatusRepository;
+import dev.datile.repository.*;
 import dev.datile.spec.ErrandSpecifications;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -45,6 +38,7 @@ public class ErrandService {
     private final CustomerRepository customerRepo;
     private final ContactRepository contactRepo;
     private final PurchaseRepository purchaseRepo;
+    private final AttachmentRepository attachmentRepo;
 
     public ErrandService(
             ErrandRepository repo,
@@ -55,7 +49,8 @@ public class ErrandService {
             AssigneeRepository assigneeRepo,
             CustomerRepository customerRepo,
             ContactRepository contactRepo,
-            PurchaseRepository purchaseRepo
+            PurchaseRepository purchaseRepo,
+            AttachmentRepository attachmentRepo
     ) {
         this.repo = repo;
         this.mapper = mapper;
@@ -66,6 +61,7 @@ public class ErrandService {
         this.customerRepo = customerRepo;
         this.contactRepo = contactRepo;
         this.purchaseRepo = purchaseRepo;
+        this.attachmentRepo = attachmentRepo;
     }
 
     @Transactional(readOnly = true)
@@ -147,10 +143,19 @@ public class ErrandService {
                 .map(mapper::toPurchaseDto)
                 .toList();
 
+        final var attachments = attachmentRepo.findByErrand_ErrandId(id).stream()
+                .map(a -> new AttachmentDto(
+                        a.getId(),
+                        a.getFileName(),
+                        a.getContentType()
+                ))
+                .toList();
+
         return mapper.toDetailsDto(
                 errand,
                 history,
-                purchases
+                purchases,
+                attachments
         );
     }
 

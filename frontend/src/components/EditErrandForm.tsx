@@ -20,6 +20,7 @@ import {
 import type { ErrandDetails } from "../types/errands";
 import { AddPurchaseForm } from "./AddPurchaseForm";
 import {useAuth} from "../hooks/useAuth.ts";
+import FileUpload from "./FileUpload.tsx";
 
 type EditErrandFormProps = {
     errand: ErrandDetails;
@@ -675,6 +676,7 @@ export const EditErrandForm = ({
                     </div>
 
                     <div className="space-y-3 pt-2">
+                        <FileUpload errandId={errand.errandId} />
                         <div className="mb-2 text-base font-bold uppercase tracking-wide text-slate-700">
                             lista på inköp
                         </div>

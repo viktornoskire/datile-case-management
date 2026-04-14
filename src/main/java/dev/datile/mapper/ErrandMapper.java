@@ -34,7 +34,8 @@ public class ErrandMapper {
     public ErrandDetailsDto toDetailsDto(
             Errand e,
             List<HistoryEntryDto> history,
-            List<PurchaseDto> purchases
+            List<PurchaseDto> purchases,
+            List<AttachmentDto> attachments
     ) {
         return new ErrandDetailsDto(
                 e.getErrandId(),
@@ -45,6 +46,7 @@ public class ErrandMapper {
                 toPriorityDto(e.getPriority()),
                 history,
                 purchases,
+                attachments,
                 toAssigneeDto(e.getAssignee()),
                 toCustomerDto(e.getCustomer()),
                 toContactDto(e.getContact()),

@@ -28,6 +28,7 @@ class ErrandServiceTest {
         var customerRepo = mock(CustomerRepository.class);
         var contactRepo = mock(ContactRepository.class);
         var purchaseRepo = mock(PurchaseRepository.class);
+        var attachmentRepo = mock(AttachmentRepository.class);
 
         var service = new ErrandService(
                 repo,
@@ -38,7 +39,8 @@ class ErrandServiceTest {
                 assigneeRepo,
                 customerRepo,
                 contactRepo,
-                purchaseRepo
+                purchaseRepo,
+                attachmentRepo
         );
 
         when(repo.findAll(any(Specification.class), any(Pageable.class)))

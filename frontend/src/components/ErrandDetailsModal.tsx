@@ -350,6 +350,40 @@ export const ErrandDetailsModal = ({
                                             {safe(data.description)}
                                         </div>
                                     </section>
+                                    <section className="rounded-2xl border border-slate-200 bg-white p-5">
+                                        <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
+                                            Bilagor
+                                        </h3>
+
+                                        <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto pr-1">
+                                            {data.attachments?.map(file =>
+                                                file.contentType.startsWith("image/") ? (
+                                                    <a
+                                                        key={file.id}
+                                                        href={`/api/attachments/${file.id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block"
+                                                    >
+                                                        <img
+                                                            src={`/api/attachments/${file.id}`}
+                                                            className="h-24 w-full object-cover rounded-xl border hover:opacity-80 transition"
+                                                        />
+                                                    </a>
+                                                ) : (
+                                                    <a
+                                                        key={file.id}
+                                                        href={`/api/attachments/${file.id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center justify-center rounded-xl border p-3 text-sm text-center break-words hover:bg-slate-50"
+                                                    >
+                                                        📎 {file.fileName}
+                                                    </a>
+                                                )
+                                            )}
+                                        </div>
+                                    </section>
 
                                     <section className="rounded-2xl border border-slate-200 bg-white p-5">
                                         <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-slate-500">

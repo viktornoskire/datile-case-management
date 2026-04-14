@@ -16,6 +16,7 @@ public record ErrandDetailsDto(
         PriorityDto priority,
         List<HistoryEntryDto> history,
         List<PurchaseDto> purchases,
+        List<AttachmentDto> attachments,
         AssigneeDto assignee,
         CustomerDto customer,
         ContactDto contact,
