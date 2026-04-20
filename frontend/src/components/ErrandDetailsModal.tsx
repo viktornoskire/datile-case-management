@@ -385,23 +385,31 @@ export const ErrandDetailsModal = ({
                                             Bilagor
                                         </h3>
 
-                                        <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto pr-1">
+                                        <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto p-1">
                                             {data.attachments?.map(file => (
-                                                <div key={file.id} className="group relative hover:scale-[1.02] transition">
+                                                <div key={file.id} className="group relative hover:scale-102">
 
                                                     {file.contentType.startsWith("image/") ? (
                                                         <img
                                                             src={`/api/attachments/${file.id}`}
-                                                            className="h-24 w-full object-cover rounded-xl border cursor-pointer"
+                                                            className="h-24 w-full object-cover rounded-xl cursor-pointer"
                                                             onClick={() => openPreview(file)}
                                                         />
                                                     ) : (
                                                         <a
                                                             href={`/api/attachments/${file.id}`}
                                                             target="_blank"
-                                                            className="flex items-center justify-center rounded-xl border p-3 text-sm text-center break-words"
+                                                            className="flex flex-col items-center justify-center h-24 px-3 text-center rounded-xl bg-gray-200 hover:bg-slate-50 transition"
                                                         >
-                                                            📎 {file.fileName}
+                                                            {/* Icon */}
+                                                            <span className="text-2xl mb-1">
+                                                                {file.contentType === "application/pdf" ? "📄" : "📎"}
+                                                            </span>
+
+                                                            {/* Filename */}
+                                                            <span className="text-xs font-medium text-slate-700 truncate w-full">
+                                                                {file.fileName}
+                                                            </span>
                                                         </a>
                                                     )}
 
@@ -654,7 +662,7 @@ export const ErrandDetailsModal = ({
             </div>
             {previewFile && (
                 <div
-                    className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center"
+                    className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center pointer-events-auto"
                     onClick={closePreview}
                 >
                     <div

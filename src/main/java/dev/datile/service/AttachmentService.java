@@ -64,7 +64,7 @@ public class AttachmentService {
 
             Attachment attachment = new Attachment();
             attachment.setErrand(errand);
-            attachment.setFileName(fileName);
+            attachment.setFileName(file.getOriginalFilename());
             attachment.setFilePath(filePath.toString());
             attachment.setContentType(file.getContentType());
 
