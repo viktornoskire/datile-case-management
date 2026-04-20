@@ -83,4 +83,14 @@ public class AttachmentService {
     public List<Attachment> getByErrand(Long errandId) {
         return repo.findByErrand_ErrandId(errandId);
     }
+
+    public void delete(Long id) throws IOException {
+        Attachment attachment = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("File not found"));
+
+        Path path = Paths.get(attachment.getFilePath());
+
+        Files.deleteIfExists(path); // deletes physical file
+        repo.deleteById(id);        // deletes DB record
+    }
 }

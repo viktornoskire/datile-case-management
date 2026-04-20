@@ -46,4 +46,10 @@ public class AttachmentController {
                 .contentType(MediaType.parseMediaType(file.getContentType())) // 👈 THIS
                 .body(resource);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) throws IOException {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
