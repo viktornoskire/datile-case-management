@@ -1,7 +1,7 @@
 http:
   routers:
     frontend:
-      rule: "Host(`viktornoskire.org`)"
+      rule: "Host(`yourdomain.org`)"
       entryPoints:
         - web
         - websecure
@@ -10,7 +10,7 @@ http:
         certResolver: myresolver
 
     backend:
-      rule: "Host(`viktornoskire.org`) && PathPrefix(`/api`)"
+      rule: "Host(`yourdomain.org`) && PathPrefix(`/api`)"
       entryPoints:
         - websecure
       service: backend
