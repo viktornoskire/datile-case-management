@@ -26,6 +26,8 @@ public class AttachmentService {
             "image/png",
             "image/jpeg",
             "image/jpg",
+            "image/heic",
+            "image/heif",
             "application/pdf"
     );
 
@@ -49,12 +51,14 @@ public class AttachmentService {
 
         for (MultipartFile file : files) {
 
-            if (!ALLOWED_TYPES.contains(file.getContentType())) {
-                throw new RuntimeException("Filtyp inte tillåten: " + file.getContentType());
+            String type = file.getContentType();
+
+            if (type == null || ALLOWED_TYPES.stream().noneMatch(type::equalsIgnoreCase)) {
+                throw new RuntimeException("Filtyp inte tillåten: " + type);
             }
 
-            if (file.getSize() > 5_000_000) { // 5MB
-                throw new RuntimeException("Filen är för stor (max 5MB)");
+            if (file.getSize() > 15_000_000) { // 15MB
+                throw new RuntimeException("Filen är för stor (max 15MB)");
             }
 
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();

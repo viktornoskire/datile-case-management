@@ -4,6 +4,7 @@ import dev.datile.domain.User;
 import dev.datile.repository.UserRepository;
 import dev.datile.service.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -98,6 +99,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+
+    @Value("#{'${APP_CORS_ALLOWED_ORIGINS}'.split(',')}")
+    private List<String> allowedOrigins;
+
     // ✅ CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -105,7 +110,7 @@ public class SecurityConfig {
 
         config.setAllowCredentials(true);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

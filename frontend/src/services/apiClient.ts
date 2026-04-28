@@ -3,13 +3,9 @@ import {buildQuery, type QueryValue} from "./buildQuery.ts";
 
 /* Shared API client wrapper + standardized error handling. It builds correct URL´s, does fetch and converts to JSON */
 
-const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
-const baseUrl = rawBaseUrl.replace(/\/+$/, "");
-
 // Build a correct url every time
 const toUrl = (path: string) => {
-    const p = path.startsWith("/") ? path : `/${path}`;
-    return baseUrl ? `${baseUrl}${p}` : p;
+    return path.startsWith("/") ? path : `/${path}`;
 };
 
 // parseBody reads the answer from the server- a common parser for all endpoints to be interpreted correctly

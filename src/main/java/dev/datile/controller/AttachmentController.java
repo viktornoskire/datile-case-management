@@ -43,7 +43,7 @@ public class AttachmentController {
         Resource resource = new UrlResource(Paths.get(file.getFilePath()).toUri());
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getContentType())) // 👈 THIS
+                .contentType(MediaType.parseMediaType(file.getContentType()))
                 .body(resource);
     }
 
