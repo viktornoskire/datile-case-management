@@ -3,20 +3,19 @@ import { useDropzone } from "react-dropzone";
 
 type Props = {
     errandId: number;
+    onUploaded?: () => void;
 };
 
 const MAX_SIZE_MB = 20;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-export default function FileUpload({ errandId }: Props) {
+export default function FileUpload({ errandId, onUploaded }: Props) {
     const [uploading, setUploading] = useState(false);
-    const [files, setFiles] = useState<File[]>([]);
     const [error, setError] = useState("");
 
     const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: any[]) => {
         setError("");
 
-        // ❌ Handle rejected files
         if (rejectedFiles.length > 0) {
             setError("Vissa filer avvisades (fel typ eller för stora).");
             return;
@@ -37,26 +36,24 @@ export default function FileUpload({ errandId }: Props) {
                 body: formData,
             });
 
-            setFiles((prev) => [...prev, ...acceptedFiles]);
+            // ✅ notify parent → reload files
+            onUploaded?.();
+
         } catch (err) {
             setError("Upload misslyckades");
             console.error(err);
         } finally {
             setUploading(false);
         }
-    }, [errandId]);
+    }, [errandId, onUploaded]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         multiple: true,
-
-        // ✅ Accept file types
         accept: {
             "image/*": [],
             "application/pdf": [],
         },
-
-        // ✅ Max file size
         maxSize: MAX_SIZE_BYTES,
     });
 
@@ -66,12 +63,10 @@ export default function FileUpload({ errandId }: Props) {
                 Bilagor
             </label>
 
-            {/* Info text */}
             <div className="text-xs text-slate-500">
                 Tillåtna filer: jpg, jpeg, png, PDF • Max storlek: {MAX_SIZE_MB} MB
             </div>
 
-            {/* Dropzone */}
             <div
                 {...getRootProps()}
                 className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition
@@ -93,26 +88,8 @@ export default function FileUpload({ errandId }: Props) {
                 )}
             </div>
 
-            {/* Error */}
             {error && (
                 <div className="text-sm text-red-600">{error}</div>
-            )}
-
-            {/* Uploaded files preview */}
-            {files.length > 0 && (
-                <div className="rounded-xl border border-slate-200 p-3">
-                    <div className="mb-2 text-xs font-semibold text-slate-500 uppercase">
-                        Uppladdade filer
-                    </div>
-
-                    <ul className="space-y-1 text-sm text-slate-700">
-                        {files.map((file, index) => (
-                            <li key={index}>
-                                📄 {file.name}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
             )}
         </div>
     );

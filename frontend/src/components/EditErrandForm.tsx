@@ -21,6 +21,7 @@ import type { ErrandDetails } from "../types/errands";
 import { AddPurchaseForm } from "./AddPurchaseForm";
 import {useAuth} from "../hooks/useAuth.ts";
 import FileUpload from "./FileUpload.tsx";
+import {FileGrid} from "./FileGrid.tsx";
 
 type EditErrandFormProps = {
     errand: ErrandDetails;
@@ -240,6 +241,7 @@ export const EditErrandForm = ({
         const updatedErrand = await fetchErrandById(errand.errandId);
         setHistoryItems(updatedErrand.history ?? []);
         setPurchases(updatedErrand.purchases ?? []);
+        setFiles(updatedErrand.attachments ?? []);
     };
 
     const handleDeletePurchaseClick = (purchaseId: number) => {
@@ -281,8 +283,8 @@ export const EditErrandForm = ({
     const auth = useAuth();
 
     useEffect(() => {
-        return setName(auth?.name);
-    }, []);
+        setName(auth?.name);
+    }, [auth]);
 
     const handleAddHistoryEntry = async () => {
         setSubmitError("");
@@ -379,6 +381,19 @@ export const EditErrandForm = ({
             setIsSaving(false);
         }
     };
+
+    type FileItem = {
+        id: number;
+        fileName: string;
+        contentType: string;
+    };
+
+    const [files, setFiles] = useState<FileItem[]>(errand.attachments ?? []);
+    const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
+
+    useEffect(() => {
+        setFiles(errand.attachments ?? []);
+    }, [errand]);
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -676,10 +691,31 @@ export const EditErrandForm = ({
                     </div>
 
                     <div className="space-y-3 pt-2">
-                        <FileUpload errandId={errand.errandId} />
+                        <FileUpload
+                            errandId={errand.errandId}
+                            onUploaded={reloadErrand}
+                        />
                         <div className="mb-2 text-base font-bold uppercase tracking-wide text-slate-700">
                             lista på inköp
                         </div>
+                        <section className="rounded-xl border border-slate-200 bg-white p-2">
+                            <div className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                                Filer
+                            </div>
+
+                            {files.length === 0 ? (
+                                <div className="text-sm text-slate-500">Inga filer ännu.</div>
+                            ) : (
+                                <FileGrid
+                                    files={files}
+                                    onPreview={(file) => setPreviewFile(file)}
+                                    onDelete={async (id) => {
+                                        await fetch(`/api/attachments/${id}`, { method: "DELETE" });
+                                        await reloadErrand();
+                                    }}
+                                />
+                            )}
+                        </section>
 
                         {purchases.length === 0 ? (
                             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
@@ -865,6 +901,36 @@ export const EditErrandForm = ({
                     {submitError}
                 </div>
             ) : null}
+            {previewFile && (
+                <div
+                    className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center"
+                    onClick={() => setPreviewFile(null)}
+                >
+                    <div
+                        className="relative max-w-4xl w-full p-4"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setPreviewFile(null)}
+                            className="absolute top-2 right-2 bg-white px-3 py-1 rounded"
+                        >
+                            ✕
+                        </button>
+
+                        {previewFile.contentType.startsWith("image/") ? (
+                            <img
+                                src={`/api/attachments/${previewFile.id}`}
+                                className="w-full max-h-[80vh] object-contain rounded"
+                            />
+                        ) : (
+                            <iframe
+                                src={`/api/attachments/${previewFile.id}`}
+                                className="w-full h-[80vh] bg-white rounded"
+                            />
+                        )}
+                    </div>
+                </div>
+            )}
         </form>
     );
 };

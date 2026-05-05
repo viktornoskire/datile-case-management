@@ -382,7 +382,7 @@ export const ErrandDetailsModal = ({
                                     </section>
                                     <section className="rounded-2xl border border-slate-200 bg-white p-5">
                                         <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                                            Bilagor
+                                            Filer
                                         </h3>
 
                                         <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto p-1">
