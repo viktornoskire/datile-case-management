@@ -99,8 +99,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-    @Value("#{'${APP_CORS_ALLOWED_ORIGINS}'.split(',')}")
+    @Value("#{'${app.allowed-origins}'.split(',')}")
     private List<String> allowedOrigins;
 
     // ✅ CORS

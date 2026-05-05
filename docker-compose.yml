@@ -1,34 +1,4 @@
 services:
-  traefik:
-    image: traefik:v3.0
-    container_name: traefik
-
-    command:
-      - "--providers.file.filename=/etc/traefik/dynamic.yml"
-
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-
-      # HTTPS
-      - "--certificatesresolvers.myresolver.acme.email=${EMAIL}"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=cloudflare"
-
-    environment:
-      - CF_DNS_API_TOKEN=${DOMAIN_API_KEY}
-
-    ports:
-      - "80:80"
-      - "443:443"
-
-    volumes:
-      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml
-      - ./letsencrypt:/letsencrypt
-
-    networks:
-      - web
-
   db:
     image: mysql:8.0.36
     container_name: datile-mysql
