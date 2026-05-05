@@ -57,8 +57,8 @@ public class AttachmentService {
                 throw new RuntimeException("Filtyp inte tillåten: " + type);
             }
 
-            if (file.getSize() > 15_000_000) { // 15MB
-                throw new RuntimeException("Filen är för stor (max 15MB)");
+            if (file.getSize() > 20_000_000) { // 20MB
+                throw new RuntimeException("Filen är för stor (max 20MB)");
             }
 
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();

@@ -5,7 +5,7 @@ type Props = {
     errandId: number;
 };
 
-const MAX_SIZE_MB = 5;
+const MAX_SIZE_MB = 20;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
 export default function FileUpload({ errandId }: Props) {
