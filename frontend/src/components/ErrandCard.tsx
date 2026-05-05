@@ -182,9 +182,9 @@ export const ErrandCard = ({
                                 </div>
 
                                 <div>
-                                    <div className="font-semibold text-slate-500">Ärende ID</div>
+                                    <div className="font-semibold text-slate-500">Status</div>
                                     <div className="font-medium text-slate-900">
-                                        {String(errand.errandId).padStart(3, "0")}
+                                        {errand.status.name}
                                     </div>
                                 </div>
                             </div>
