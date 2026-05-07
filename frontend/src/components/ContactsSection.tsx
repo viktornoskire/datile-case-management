@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { createContact, fetchContacts, type ContactListItem } from "../api/contactsApi";
+import {
+    createContact,
+    deleteContact,
+    fetchContacts,
+    updateContact,
+    type ContactListItem
+} from "../api/contactsApi";
 import { fetchCustomerLookups, type CustomerLookup } from "../api/customersApi";
 
 type ContactDraft = {
@@ -40,6 +46,105 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
     const [showNewContactForm, setShowNewContactForm] = useState(false);
     const [draft, setDraft] = useState<ContactDraft>(emptyDraft);
     const [isCreating, setIsCreating] = useState(false);
+
+    const [editingContactId, setEditingContactId] = useState<number | null>(null);
+
+    const [editDraft, setEditDraft] = useState<ContactDraft>(emptyDraft);
+
+    const [isSaving, setIsSaving] = useState(false);
+
+    const [isDeleting, setIsDeleting] = useState<number | null>(null);
+
+    const startEdit = (contact: ContactListItem) => {
+        setEditingContactId(contact.contactId);
+
+        setEditDraft({
+            customerId: String(contact.customerId),
+            firstName: contact.firstName,
+            lastName: contact.lastName,
+            phoneNumber: contact.phoneNumber ?? "",
+            mail: contact.mail ?? "",
+        });
+
+        setError(null);
+    };
+
+    const cancelEdit = () => {
+        setEditingContactId(null);
+        setEditDraft(emptyDraft);
+    };
+
+    const handleSaveContact = async (contactId: number) => {
+        if (
+            !editDraft.customerId ||
+            !editDraft.firstName.trim() ||
+            !editDraft.lastName.trim()
+        ) {
+            setError("Kund, förnamn och efternamn måste fyllas i.");
+            return;
+        }
+
+        if (!isValidEmail(editDraft.mail)) {
+            setError("Ogiltig e-postadress.");
+            return;
+        }
+
+        if (!isValidPhoneNumber(editDraft.phoneNumber)) {
+            setError("Ogiltigt telefonnummer.");
+            return;
+        }
+
+        try {
+            setIsSaving(true);
+            setError(null);
+
+            await updateContact(contactId, {
+                customerId: Number(editDraft.customerId),
+                firstName: editDraft.firstName.trim(),
+                lastName: editDraft.lastName.trim(),
+                phoneNumber: editDraft.phoneNumber.trim(),
+                mail: editDraft.mail.trim(),
+            });
+
+            await loadContacts();
+
+            setEditingContactId(null);
+            setEditDraft(emptyDraft);
+
+        } catch (err) {
+            console.error(err);
+            setError("Kunde inte spara kontakt.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeleteContact = async (contactId: number) => {
+        const confirmed = window.confirm(
+            "Är du säker på att du vill ta bort kontakten?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            setIsDeleting(contactId);
+            setError(null);
+
+            await deleteContact(contactId);
+
+            await loadContacts();
+
+            if (editingContactId === contactId) {
+                cancelEdit();
+            }
+
+        } catch (err) {
+            console.error(err);
+            setError("Kunde inte ta bort kontakt.");
+        } finally {
+            setIsDeleting(null);
+        }
+    };
 
     const loadContacts = async () => {
         const response = await fetchContacts();
@@ -353,23 +458,150 @@ export default function ContactsSection({ customerQuery }: ContactsSectionProps)
                                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                     Telefon
                                 </th>
+                                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Åtgärder
+                                </th>
                             </tr>
                             </thead>
 
                             <tbody className="divide-y divide-slate-200 bg-white">
                             {filteredContacts.map((contact) => (
                                 <tr key={contact.contactId} className="hover:bg-slate-50">
+
                                     <td className="px-4 py-3 text-sm text-slate-900">
-                                        {contact.firstName} {contact.lastName}
+                                        {editingContactId === contact.contactId ? (
+                                            <div className="flex gap-2">
+                                                <input
+                                                    value={editDraft.firstName}
+                                                    onChange={(e) =>
+                                                        setEditDraft((current) => ({
+                                                            ...current,
+                                                            firstName: e.target.value,
+                                                        }))
+                                                    }
+                                                    className="w-full rounded-lg border border-slate-300 px-2 py-1"
+                                                />
+
+                                                <input
+                                                    value={editDraft.lastName}
+                                                    onChange={(e) =>
+                                                        setEditDraft((current) => ({
+                                                            ...current,
+                                                            lastName: e.target.value,
+                                                        }))
+                                                    }
+                                                    className="w-full rounded-lg border border-slate-300 px-2 py-1"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {contact.firstName} {contact.lastName}
+                                            </>
+                                        )}
                                     </td>
+
                                     <td className="px-4 py-3 text-sm text-slate-700">
-                                        {contact.customerName ?? "—"}
+                                        {editingContactId === contact.contactId ? (
+                                            <select
+                                                value={editDraft.customerId}
+                                                onChange={(e) =>
+                                                    setEditDraft((current) => ({
+                                                        ...current,
+                                                        customerId: e.target.value,
+                                                    }))
+                                                }
+                                                className="rounded-lg border border-slate-300 px-2 py-1"
+                                            >
+                                                {customers.map((customer) => (
+                                                    <option
+                                                        key={customer.customerId}
+                                                        value={customer.customerId}
+                                                    >
+                                                        {customer.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            contact.customerName ?? "—"
+                                        )}
                                     </td>
+
                                     <td className="px-4 py-3 text-sm text-slate-700">
-                                        {contact.mail || "—"}
+                                        {editingContactId === contact.contactId ? (
+                                            <input
+                                                value={editDraft.mail}
+                                                onChange={(e) =>
+                                                    setEditDraft((current) => ({
+                                                        ...current,
+                                                        mail: e.target.value,
+                                                    }))
+                                                }
+                                                className="w-full rounded-lg border border-slate-300 px-2 py-1"
+                                            />
+                                        ) : (
+                                            contact.mail || "—"
+                                        )}
                                     </td>
+
                                     <td className="px-4 py-3 text-sm text-slate-700">
-                                        {contact.phoneNumber || "—"}
+                                        {editingContactId === contact.contactId ? (
+                                            <input
+                                                value={editDraft.phoneNumber}
+                                                onChange={(e) =>
+                                                    setEditDraft((current) => ({
+                                                        ...current,
+                                                        phoneNumber: e.target.value,
+                                                    }))
+                                                }
+                                                className="w-full rounded-lg border border-slate-300 px-2 py-1"
+                                            />
+                                        ) : (
+                                            contact.phoneNumber || "—"
+                                        )}
+                                    </td>
+
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center justify-end gap-3 whitespace-nowrap">
+
+                                            {editingContactId === contact.contactId ? (
+                                                <>
+                                                    <button
+                                                        onClick={() =>
+                                                            void handleSaveContact(contact.contactId)
+                                                        }
+                                                        disabled={isSaving}
+                                                        className="rounded-full bg-[#99D0B6] px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                                                    >
+                                                        Spara
+                                                    </button>
+
+                                                    <button
+                                                        onClick={cancelEdit}
+                                                        className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-[#022B4F] transition hover:bg-slate-50"
+                                                    >
+                                                        Avbryt
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() =>
+                                                            void handleDeleteContact(contact.contactId)
+                                                        }
+                                                        disabled={isDeleting === contact.contactId}
+                                                        className="text-sm font-semibold text-red-500 transition hover:text-red-600"
+                                                    >
+                                                        Ta bort
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button
+                                                    onClick={() => startEdit(contact)}
+                                                    className="rounded-full border border-[#99D0B6] bg-white px-5 py-2 text-sm font-semibold text-[#99D0B6] transition hover:bg-[#99D0B6]/10"
+                                                >
+                                                    Redigera
+                                                </button>
+                                            )}
+
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
