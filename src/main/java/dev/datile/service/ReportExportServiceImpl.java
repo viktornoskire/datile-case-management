@@ -44,6 +44,16 @@ public class ReportExportServiceImpl implements ReportExportService {
             csv.append(csvValue(row.customerPurchaseTotal())).append("\n");
         }
 
+        BigDecimal totalTimeSpent = rows.stream()
+                .map(ReportRowDto::timeSpent)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        csv.append("\n");
+        csv.append("\"TOTAL TID\";;;;;;;");
+        csv.append(csvValue(totalTimeSpent));
+        csv.append(";");
+
         return csv.toString().getBytes(StandardCharsets.UTF_8);
     }
 

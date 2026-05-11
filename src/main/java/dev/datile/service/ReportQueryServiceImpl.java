@@ -18,11 +18,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -94,12 +96,20 @@ public class ReportQueryServiceImpl implements ReportQueryService {
 
         List<ReportListItemDto> reports = mapToListItems(resultPage.getContent());
 
+        List<Errand> allMatchingErrands = errandRepository.findAll(specification);
+
+        BigDecimal totalTimeSpent = allMatchingErrands.stream()
+                .map(Errand::getTimeSpent)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         return new ReportsResponseDto(
                 reports,
                 resultPage.getNumber(),
                 resultPage.getSize(),
                 resultPage.getTotalElements(),
-                resultPage.getTotalPages()
+                resultPage.getTotalPages(),
+                totalTimeSpent
         );
     }
 

@@ -63,6 +63,7 @@ export type ReportsResponse = {
     size: number;
     totalElements: number;
     totalPages: number;
+    totalTimeSpent: number;
 };
 
 export type ReportFilters = {

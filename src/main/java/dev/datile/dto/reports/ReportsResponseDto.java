@@ -1,5 +1,6 @@
 package dev.datile.dto.reports;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public record ReportsResponseDto(
@@ -7,5 +8,6 @@ public record ReportsResponseDto(
         int page,
         int size,
         long totalElements,
-        int totalPages
+        int totalPages,
+        BigDecimal totalTimeSpent
 ) {}

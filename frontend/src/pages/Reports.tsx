@@ -291,10 +291,15 @@ export default function Reports() {
                                 </div>
 
                                 {!loading && !error && data && (
-                                    <div
-                                        className="inline-flex w-fit items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
-                                        {data.totalElements}{" "}
-                                        {data.totalElements === 1 ? "träff" : "träffar"}
+                                    <div className="flex flex-wrap gap-3">
+                                        <div className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+                                            {data.totalElements}{" "}
+                                            {data.totalElements === 1 ? "träff" : "träffar"}
+                                        </div>
+
+                                        <div className="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+                                            Total tid: {data.totalTimeSpent ?? 0} h
+                                        </div>
                                     </div>
                                 )}
                             </div>
