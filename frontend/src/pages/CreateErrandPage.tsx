@@ -986,12 +986,10 @@ export default function CreateErrandPage() {
                                     Tidsåtgång
                                 </label>
                                 <input
-                                    id="timeSpent"
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
+                                    type="text"
+                                    pattern="^\d+([.,]\d+)?$"
                                     name="timeSpent"
-                                    value={values.timeSpent}
+                                    value={values.timeSpent.replaceAll(",", ".")}
                                     onChange={handleFieldChange}
                                     className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400"
                                 />
